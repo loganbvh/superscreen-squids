@@ -10,8 +10,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--same-scale",
-        type=bool,
         default=False,
+        action="store_true",
         help="Whether to plot all devices on the same scale.",
     )
     args = parser.parse_args()
