@@ -1,0 +1,39 @@
+import argparse
+
+import matplotlib.pyplot as plt
+
+from . import huber
+from . import ibm
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--same-scale",
+        type=bool,
+        default=False,
+        help="Whether to plot all devices on the same scale.",
+    )
+    args = parser.parse_args()
+
+    fig, axes = plt.subplots(
+        1,
+        4,
+        figsize=(12, 3),
+        sharex=args.same_scale,
+        sharey=args.same_scale,
+        constrained_layout=True,
+    )
+
+    squid_funcs = [
+        ibm.small.make_squid,
+        ibm.medium.make_squid,
+        ibm.large.make_squid,
+        huber.make_squid,
+    ]
+
+    for ax, make_squid in zip(axes, squid_funcs):
+        squid = make_squid()
+        squid.plot_polygons(ax=ax, legend=False, grid=False)
+        ax.set_title(make_squid.__module__)
+    plt.show()
