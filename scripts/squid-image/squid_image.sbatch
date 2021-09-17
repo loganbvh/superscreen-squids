@@ -5,7 +5,7 @@
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --time=08:00:00
 #SBATCH --ntasks=1
-#SBATCH --mem=6G
+#SBATCH --mem=8G
 
 echo "slurm script:"
 echo "$(<$0)"
@@ -22,8 +22,8 @@ mkdir -p $outdir/logs
 
 python image_row.py \
     --outdir=$outdir \
-    --squid-height=0.25 \
-    --min-triangles=8000 \
+    --squid-height=0.1 \
+    --min-triangles=10000 \
     --x_range="-7, 5" \
     --y_range="-7, 5" \
     --iterations=2

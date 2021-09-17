@@ -136,7 +136,10 @@ if __name__ == "__main__":
     ys = np.linspace(ystart, ystop, int(np.ceil((ystop - ystart) / pixel_size)))
 
     squid = squids.ibm.medium.make_squid()
+    squid = flip_device(squid, about_axis="x")
     sample = squids.ibm.large.make_squid()
+    films = [film for film in sample.films_list if film.name != "pl_shield2"]
+    sample.films_list = films
     sample.layers["BE"].london_lambda = 0.08
     sample = flip_device(sample, about_axis="y")
 
