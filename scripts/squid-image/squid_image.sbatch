@@ -1,12 +1,11 @@
 #!/bin/bash
 
 #SBATCH --job-name=squid_image
-#SBATCH --array=0-47
+#SBATCH --array=0-95
 #SBATCH --output=slurm-%A_%a.out
-#SBATCH --nodes=1
-#SBATCH --time=04:00:00
+#SBATCH --time=08:00:00
 #SBATCH --ntasks=1
-#SBATCH --mem=4G
+#SBATCH --mem=6G
 
 echo "slurm script:"
 echo "$(<$0)"
@@ -19,9 +18,12 @@ source $GROUP_HOME/miniconda3/bin/activate
 conda activate superscreen
 
 python image_row.py \
-    --outdir=$SCRATCH/image_squid/ \
-    --squid_height=0 \
-    --min_triangles=8000 \
+    --outdir=$HOME/superscreen-squids/scripts/squid-image/results/ \
+    --squid-height=0 \
+    --min-triangles=8000 \
     --x_range="-7, 5" \
     --y_range="-7, 5" \
     --iterations=2
+
+mkdir $HOME/superscreen-squids/scripts/results/$SLURM_ARRAY_JOB_ID/logs
+mv $SLURM_ARRAY_JOB_ID*.out $HOME/superscreen-squids/scripts/results/$SLURM_ARRAY_JOB_ID/logs/

@@ -6,7 +6,7 @@ import numpy as np
 
 import superscreen as sc
 
-sys.path.insert(0, os.pardir)
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 import squids
 
 
@@ -22,16 +22,16 @@ def mirror_layers(device, about=0, in_place=False):
     return device
 
 
-# def flip_device(device, about_axis="x"):
-#     device = device.copy(with_arrays=False)
-#     assert about_axis in "xy"
-#     index = 0 if about_axis == "y" else 1
-#     polygons = (
-#         device.films_list + device.holes_list + device.abstract_regions_list
-#     )
-#     for polygon in polygons:
-#         polygon.points[:, index] *= -1
-#     return device
+def flip_device(device, about_axis="y"):
+    device = device.copy(with_arrays=False)
+    assert about_axis in "xy"
+    index = 0 if about_axis == "y" else 1
+    polygons = (
+        device.films_list + device.holes_list + device.abstract_regions_list
+    )
+    for polygon in polygons:
+        polygon.points[:, index] *= -1
+    return device
 
 
 def update_origin(device, x0=0, y0=0):
@@ -116,15 +116,15 @@ if __name__ == "__main__":
     min_triangles = args.min_triangles
     x_range = args.x_range
     y_range = args.y_range
-    pixel_size = args.pixel_size
     iterations = args.iterations
 
     job_id = os.environ["SLURM_ARRAY_JOB_ID"]
     array_id = os.environ["SLURM_ARRAY_TASK_ID"]
     num_tasks = float(os.environ["SLURM_ARRAY_TASK_COUNT"])
 
+    outdir = os.path.join(args.outdir, job_id)
     outfile = os.path.join(
-        args.outdir,
+        outdir,
         f"{job_id}_{array_id}_image_squid.npz",
     )
 
@@ -147,6 +147,7 @@ if __name__ == "__main__":
     squid = squids.ibm.medium.make_squid()
     sample = squids.ibm.large.make_squid()
     sample.layers["BE"].london_lambda = 0.08
+    sample = flip_device(sample, about_axis="y")
 
     squid.make_mesh(min_triangles=args.min_triangles, optimesh_steps=400)
     sample.make_mesh(min_triangles=args.min_triangles, optimesh_steps=400)
@@ -169,9 +170,8 @@ if __name__ == "__main__":
 
     flux = []
     for i, x0 in enumerate(sample_x0s):
-        logging.info(i, x0, end="\n\n")
         
-        logging.info("Solving for sample response to field coil...")
+        logging.info(f"({i}) Solving for sample response to field coil...")
         _sample = mirror_layers(sample, about=-abs(squid_height))
         _sample = update_origin(_sample, x0=-x0, y0=-sample_y0)
             
@@ -207,8 +207,9 @@ if __name__ == "__main__":
         logging.info("Computing pickup loop flux...")
         flux.append(solution.polygon_flux(units="Phi_0", with_units=False)["pl_hull"])
         logging.info(flux)
-
-    os.makedirs(args.outdir, exist_ok=True)
+    
+    flux = np.array(flux)
+    os.makedirs(outdir, exist_ok=True)
     susc = 1e3 * flux  - m_no_sample.magnitude
     data = dict(
         row=int(array_id),
@@ -222,3 +223,6 @@ if __name__ == "__main__":
         length_units="um",
     )
     np.savez(outfile, **data)
+    logging.info(f"Data saved to {outfile}.")
+    logging.info("Done.")
+
