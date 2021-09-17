@@ -225,4 +225,3 @@ if __name__ == "__main__":
     np.savez(outfile, **data)
     logging.info(f"Data saved to {outfile}.")
     logging.info("Done.")
-
