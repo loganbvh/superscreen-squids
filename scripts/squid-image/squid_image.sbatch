@@ -17,13 +17,15 @@ echo "$(<image_row.py)"
 source $GROUP_HOME/miniconda3/bin/activate
 conda activate superscreen
 
+outdir=$HOME/superscreen-squids/scripts/squid-image/results/$SLURM_ARRAY_JOB_ID
+mkdir -p $outdir/logs
+
 python image_row.py \
-    --outdir=$HOME/superscreen-squids/scripts/squid-image/results/ \
+    --outdir=$outdir \
     --squid-height=0.25 \
     --min-triangles=8000 \
     --x_range="-7, 5" \
     --y_range="-7, 5" \
     --iterations=2
 
-mkdir $HOME/superscreen-squids/scripts/results/$SLURM_ARRAY_JOB_ID/logs
-mv slurm-$SLURM_ARRAY_JOB_ID_$SLURM_ARRAY_TASK_ID.out $HOME/superscreen-squids/scripts/results/$SLURM_ARRAY_JOB_ID/logs/
+mv slurm-$SLURM_ARRAY_JOB_ID_$SLURM_ARRAY_TASK_ID.out $outdir/logs/
