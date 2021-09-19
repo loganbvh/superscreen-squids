@@ -215,8 +215,8 @@ if __name__ == "__main__":
     sample.films_list = films
     for layer in sample.layers_list:
         layer.london_lambda = 0.08
-    sample = split_layer(sample, "BE", max_thickness=0.08)
-    sample = split_layer(sample, "W1", max_thickness=0.05)
+    # sample = split_layer(sample, "BE", max_thickness=0.08)
+    # sample = split_layer(sample, "W1", max_thickness=0.05)
     sample = flip_device(sample, about_axis="y")
 
     squid.make_mesh(min_triangles=args.min_triangles, optimesh_steps=400)
