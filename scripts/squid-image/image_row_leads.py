@@ -216,7 +216,7 @@ if __name__ == "__main__":
             "xwide1",
             layer="W1",
             points=sc.geometry.rotate(
-                sc.geometry.rectangle(15, 40, center=(6, -1)),
+                sc.geometry.rectangle(15, 41, center=(6, -1)),
                 19,
             )
         ),
@@ -239,7 +239,7 @@ if __name__ == "__main__":
             "wide1",
             layer="BE",
             points=sc.geometry.rotate(
-                sc.geometry.rectangle(4, 40, center=(9.5, -1)),
+                sc.geometry.rectangle(3, 41, center=(9.5, -1)),
                 19,
             ) 
         ),
@@ -247,7 +247,7 @@ if __name__ == "__main__":
             "wide2",
             layer="BE",
             points=sc.geometry.rotate(
-                sc.geometry.rectangle(4, 40, center=(2.5, -1)),
+                sc.geometry.rectangle(3, 41, center=(2.5, -1)),
                 19,
             ) 
         ),
@@ -255,7 +255,7 @@ if __name__ == "__main__":
             "narrow1",
             layer="W2",
             points=sc.geometry.rotate(
-                sc.geometry.rectangle(40, 1.5, center=(0, 2.75)),
+                sc.geometry.rectangle(47, 1.0, center=(-1, 2.75)),
                 -27,
             ) 
         ),
@@ -263,7 +263,7 @@ if __name__ == "__main__":
             "narrow2",
             layer="W2",
             points=sc.geometry.rotate(
-                sc.geometry.rectangle(40, 1.5, center=(2, -4.25)),
+                sc.geometry.rectangle(47, 1.0, center=(2.5, -4.25)),
                 -27,
             ) 
         )
