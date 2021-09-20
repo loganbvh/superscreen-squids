@@ -269,12 +269,18 @@ if __name__ == "__main__":
         )
     ]
 
+    abstract_regions = [
+        sc.Polygon("bounding_box", layer="BE", points=sc.geometry.square(45, 45, center=(0, 1))),
+    ]
+
     sample  =sc.Device(
         name="sample",
         layers=squids.ibm.large.make_squid().layers_list,
         films=films,
+        abstract_regions=abstract_regions,
         length_units="um",
     )
+
     for layer in sample.layers_list:
         layer.london_lambda = 0.08
 

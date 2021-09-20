@@ -22,10 +22,10 @@ mkdir -p $outdir/logs
 
 python image_row_leads.py \
     --outdir=$outdir \
-    --squid-height=0.0 \
+    --squid-height=0.1 \
     --min-triangles=8000 \
     --x_range="-15, 15" \
     --y_range="-15, 15" \
-    --iterations=2
+    --iterations=3
 
 mv "slurm-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.out" $outdir/logs/
