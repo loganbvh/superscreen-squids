@@ -6,6 +6,8 @@ import numpy as np
 
 import superscreen as sc
 
+from . import ibm_large
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 import squids
 
@@ -210,7 +212,8 @@ if __name__ == "__main__":
 
     squid = squids.ibm.medium.make_squid()
     squid = flip_device(squid, about_axis="x")
-    sample = squids.ibm.large.make_squid()
+    # sample = squids.ibm.large.make_squid()
+    sample = ibm_large.make_squid()
     films = [film for film in sample.films_list if film.name != "pl_shield2"]
     sample.films_list = films
     for layer in sample.layers_list:

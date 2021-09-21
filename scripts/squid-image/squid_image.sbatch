@@ -20,7 +20,7 @@ conda activate superscreen
 outdir=$HOME/superscreen-squids/scripts/squid-image/results/$SLURM_ARRAY_JOB_ID
 mkdir -p $outdir/logs
 
-python image_row_leads.py \
+python image_row.py \
     --outdir=$outdir \
     --squid-height=0.05 \
     --min-triangles=8000 \
