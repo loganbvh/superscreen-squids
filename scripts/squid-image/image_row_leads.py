@@ -235,22 +235,22 @@ if __name__ == "__main__":
                 ]
             ),
         ),
-        sc.Polygon(
-            "wide1",
-            layer="BE",
-            points=sc.geometry.rotate(
-                sc.geometry.rectangle(3, 41, center=(9.5, -1)),
-                19,
-            ) 
-        ),
-        sc.Polygon(
-            "wide2",
-            layer="BE",
-            points=sc.geometry.rotate(
-                sc.geometry.rectangle(3, 41, center=(2.5, -1)),
-                19,
-            ) 
-        ),
+        # sc.Polygon(
+        #     "wide1",
+        #     layer="BE",
+        #     points=sc.geometry.rotate(
+        #         sc.geometry.rectangle(3, 41, center=(9.5, -1)),
+        #         19,
+        #     ) 
+        # ),
+        # sc.Polygon(
+        #     "wide2",
+        #     layer="BE",
+        #     points=sc.geometry.rotate(
+        #         sc.geometry.rectangle(3, 41, center=(2.5, -1)),
+        #         19,
+        #     ) 
+        # ),
         sc.Polygon(
             "narrow1",
             layer="W2",
@@ -270,12 +270,14 @@ if __name__ == "__main__":
     ]
 
     abstract_regions = [
-        sc.Polygon("bounding_box", layer="BE", points=sc.geometry.square(45, 45, center=(0, 1))),
+        sc.Polygon("bounding_box", layer="W1", points=sc.geometry.square(45, 45, center=(0, 1))),
     ]
+
+    layers = [l for l in squids.ibm.large.make_squid().layers_list if l.name != "BE"]
 
     sample  =sc.Device(
         name="sample",
-        layers=squids.ibm.large.make_squid().layers_list,
+        layers=layers,
         films=films,
         abstract_regions=abstract_regions,
         length_units="um",
@@ -362,5 +364,7 @@ if __name__ == "__main__":
         length_units="um",
     )
     np.savez(outfile, **data)
+    squid.to_file(outdir)
+    sample.to_file(outdir)
     logging.info(f"Data saved to {outfile}.")
     logging.info("Done.")
