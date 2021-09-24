@@ -6,7 +6,7 @@ import numpy as np
 
 import superscreen as sc
 
-from . import ibm_large
+import ibm_large
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 import squids
@@ -216,6 +216,8 @@ if __name__ == "__main__":
     sample = ibm_large.make_squid()
     films = [film for film in sample.films_list if film.name != "pl_shield2"]
     sample.films_list = films
+    holes = [hole for hole in sample.holes_list if hole.name != "pl_center"]
+    sample.holes_list = holes
     for layer in sample.layers_list:
         layer.london_lambda = 0.08
     # sample = split_layer(sample, "BE", max_thickness=0.08)
