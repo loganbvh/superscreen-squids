@@ -218,7 +218,7 @@ if __name__ == "__main__":
             points=sc.geometry.rotate(
                 sc.geometry.rectangle(15, 41, center=(6, -1)),
                 19,
-            )
+            ),
         ),
         sc.Polygon(
             "xwide2",
@@ -241,7 +241,7 @@ if __name__ == "__main__":
         #     points=sc.geometry.rotate(
         #         sc.geometry.rectangle(3, 41, center=(9.5, -1)),
         #         19,
-        #     ) 
+        #     )
         # ),
         # sc.Polygon(
         #     "wide2",
@@ -249,7 +249,7 @@ if __name__ == "__main__":
         #     points=sc.geometry.rotate(
         #         sc.geometry.rectangle(3, 41, center=(2.5, -1)),
         #         19,
-        #     ) 
+        #     )
         # ),
         sc.Polygon(
             "narrow1",
@@ -257,7 +257,7 @@ if __name__ == "__main__":
             points=sc.geometry.rotate(
                 sc.geometry.rectangle(36, 1.0, center=(-4, 2.75)),
                 -27,
-            ) 
+            ),
         ),
         sc.Polygon(
             "narrow2",
@@ -265,17 +265,19 @@ if __name__ == "__main__":
             points=sc.geometry.rotate(
                 sc.geometry.rectangle(39, 1.0, center=(2, -4.25)),
                 -27,
-            ) 
-        )
+            ),
+        ),
     ]
 
     abstract_regions = [
-        sc.Polygon("bounding_box", layer="W1", points=sc.geometry.square(45, 45, center=(0, 1))),
+        sc.Polygon(
+            "bounding_box", layer="W1", points=sc.geometry.square(45, 45, center=(0, 1))
+        ),
     ]
 
     layers = [l for l in squids.ibm.large.make_squid().layers_list if l.name != "BE"]
 
-    sample  =sc.Device(
+    sample = sc.Device(
         name="sample",
         layers=layers,
         films=films,

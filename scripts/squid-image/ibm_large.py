@@ -57,9 +57,9 @@ def squid_geometry(interp_points=101):
         ]
     )
     pl_hull = sc.geometry.rotate(pl_hull, pl_angle)
-    
+
     pl_points = pl_hull.copy()
-    
+
     pl_center = np.concatenate(
         [
             [[w_pl_center / 2, -2 * ri_pl]],
@@ -183,7 +183,7 @@ def make_squid(interp_points=121):
     layers = [
         sc.Layer("W2", london_lambda=0.08, thickness=d_w2, z0=z0_w2),
         sc.Layer("W1", london_lambda=0.08, thickness=d_w1, z0=z0_w1),
-        sc.Layer("BE", london_lambda=2.00, thickness=d_be, z0=z0_be),
+        sc.Layer("BE", london_lambda=0.08, thickness=d_be, z0=z0_be),
     ]
     films = [
         sc.Polygon("fc", layer="BE", points=polygons["fc"]),
@@ -194,7 +194,7 @@ def make_squid(interp_points=121):
     ]
     holes = [
         sc.Polygon("fc_center", layer="BE", points=polygons["fc_center"]),
-        sc.Polygon("pl_center", layer="W1", points=polygons["pl_center"])
+        sc.Polygon("pl_center", layer="W1", points=polygons["pl_center"]),
     ]
     abstract_regions = [
         sc.Polygon(

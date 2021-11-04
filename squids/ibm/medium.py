@@ -7,8 +7,8 @@ import superscreen as sc
 
 def squid_geometry(interp_points=101):
 
-    ri_pl = 0.25
-    ro_pl = 0.45
+    ri_pl = 0.3
+    ro_pl = 0.5
     ri_fc = 1.0
     ro_fc = 1.5
 
@@ -38,14 +38,19 @@ def squid_geometry(interp_points=101):
                 ::-1
             ],
             [[w_pl_outer / 2, y0_pl_leads]],
-            [[w_pl_center / 2, y0_pl_leads]],
-            ri_pl
-            * np.stack([np.cos(thetas_pl_center), np.sin(thetas_pl_center)], axis=1),
-            [[-w_pl_center / 2, y0_pl_leads]],
-            [[-w_pl_outer / 2, y0_pl_leads]],
         ]
     )
     pl_points = sc.geometry.rotate(pl_points, pl_angle)
+
+    pl_center = np.concatenate(
+        [
+            [[w_pl_center / 2, y0_pl_leads + (ro_pl - ri_pl)]],
+            ri_pl
+            * np.stack([np.cos(thetas_pl_center), np.sin(thetas_pl_center)], axis=1),
+            [[-w_pl_center / 2, y0_pl_leads + (ro_pl - ri_pl)]],
+        ]
+    )
+    pl_center = sc.geometry.rotate(pl_center, pl_angle)
 
     pl_shield = np.array(
         [
@@ -60,21 +65,6 @@ def squid_geometry(interp_points=101):
     pl_shield = pl_shield + np.array([[0, 0.1]])
 
     pl_shield2 = np.array([[-0.5, -1.75], [0.5, -1.75], [1.0, -3.5], [-1.0, -3.5]])
-
-    pl_hull = np.concatenate(
-        [
-            [[-w_pl_outer / 2, y0_pl_leads]],
-            ro_pl
-            * np.stack([np.cos(thetas_pl_outer), np.sin(thetas_pl_outer)], axis=1)[
-                ::-1
-            ],
-            [[w_pl_outer / 2, y0_pl_leads]],
-            [[w_pl_center / 2, y0_pl_leads]],
-            [[-w_pl_center / 2, y0_pl_leads]],
-            [[-w_pl_outer / 2, y0_pl_leads]],
-        ]
-    )
-    pl_hull = sc.geometry.rotate(pl_hull, pl_angle)
 
     w_fc_center = 0.55
     w_fc_outer = 1.30
@@ -140,7 +130,7 @@ def squid_geometry(interp_points=101):
 
     polygons = {
         "pl": pl_points,
-        "pl_hull": pl_hull,
+        "pl_center": pl_center,
         "pl_shield": pl_shield,
         "pl_shield2": pl_shield2,
         "fc": fc_outer_points,
@@ -191,7 +181,7 @@ def make_squid(interp_points=121):
     layers = [
         sc.Layer("W2", london_lambda=0.08, thickness=d_w2, z0=z0_w2),
         sc.Layer("W1", london_lambda=0.08, thickness=d_w1, z0=z0_w1),
-        sc.Layer("BE", london_lambda=1.00, thickness=d_be, z0=z0_be),
+        sc.Layer("BE", london_lambda=0.08, thickness=d_be, z0=z0_be),
     ]
     films = [
         sc.Polygon("fc", layer="BE", points=polygons["fc"]),
@@ -201,14 +191,14 @@ def make_squid(interp_points=121):
     ]
     holes = [
         sc.Polygon("fc_center", layer="BE", points=polygons["fc_center"]),
+        sc.Polygon("pl_center", layer="W1", points=polygons["pl_center"]),
     ]
     abstract_regions = [
         sc.Polygon(
             "bounding_box",
             layer="W1",
-            points=sc.geometry.rectangle(6, 7.5, center=(0.5, -1)),
+            points=sc.geometry.rectangle(6, 6, center=(0.75, -1)),
         ),
-        sc.Polygon("pl_hull", layer="W1", points=polygons["pl_hull"]),
     ]
 
     device = sc.Device(
