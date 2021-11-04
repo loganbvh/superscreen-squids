@@ -6,8 +6,6 @@ import numpy as np
 
 import superscreen as sc
 
-import ibm_large
-
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 import squids
 
@@ -157,6 +155,12 @@ if __name__ == "__main__":
         help="Minimum number of triangles to use in the two SQUID meshes.",
     )
     parser.add_argument(
+        "--optimesh-steps",
+        type=int,
+        default=None,
+        help="Number of optimesh steps to perform."
+    )
+    parser.add_argument(
         "--iterations",
         type=int,
         default=2,
@@ -187,6 +191,7 @@ if __name__ == "__main__":
     x_range = args.x_range
     y_range = args.y_range
     iterations = args.iterations
+    optimesh_steps = args.optimesh_steps
 
     job_id = os.environ["SLURM_ARRAY_JOB_ID"]
     array_id = os.environ["SLURM_ARRAY_TASK_ID"]
@@ -213,18 +218,10 @@ if __name__ == "__main__":
     squid = squids.ibm.medium.make_squid()
     squid = flip_device(squid, about_axis="x")
     sample = squids.ibm.large.make_squid()
-    # films = [film for film in sample.films_list if film.name != "pl_shield2"]
-    # sample.films_list = films
-    # holes = [hole for hole in sample.holes_list if hole.name != "pl_center"]
-    # sample.holes_list = holes
-    # for layer in sample.layers_list:
-    #     layer.london_lambda = 0.08
-    # sample = split_layer(sample, "BE", max_thickness=0.08)
-    # sample = split_layer(sample, "W1", max_thickness=0.05)
     sample = flip_device(sample, about_axis="y")
 
-    squid.make_mesh(min_triangles=args.min_triangles, optimesh_steps=None)
-    sample.make_mesh(min_triangles=args.min_triangles, optimesh_steps=None)
+    squid.make_mesh(min_triangles=args.min_triangles, optimesh_steps=optimesh_steps)
+    sample.make_mesh(min_triangles=args.min_triangles, optimesh_steps=optimesh_steps)
 
     logging.info("Computing bare mutual inductance...")
     circulating_currents = {"fc_center": "1 mA"}
@@ -236,10 +233,10 @@ if __name__ == "__main__":
         return_solutions=True,
     )[-1]
 
-    flux = fc_solution.polygon_flux()
-    m_no_sample = (flux["pl_hull"] / I_fc).to("Phi_0/A")
-    logging.info(f"\tPhi = {flux['pl_hull'].to('Phi_0'):.3e~P}")
-    logging.info(f"\tM = {m_no_sample:.3f~P}")
+    pl_fluxoid = sum(fc_solution.hole_fluxoid("pl_center", units="Phi_0"))
+    m_no_sample = (pl_fluxoid / I_fc).to("Phi_0/A")
+    logging.info(f"\tPhi = {pl_fluxoid:~.3fP}")
+    logging.info(f"\tM = {m_no_sample:~.3fP}")
 
     sample_x0s = xs
     sample_y0 = ys[int(array_id)]
@@ -282,7 +279,8 @@ if __name__ == "__main__":
             iterations=iterations,
         )[-1]
         logging.info("\tComputing pickup loop flux...")
-        flux.append(solution.polygon_flux(units="Phi_0", with_units=False)["pl_hull"])
+        fluxoid = sum(solution.hole_fluxoid("pl_center", units="Phi_0"))
+        flux.append(fluxoid.magnitude)
         logging.info(f"({i + 1} / {len(xs)}) flux: {flux}")
 
     # Units: Phi_0
