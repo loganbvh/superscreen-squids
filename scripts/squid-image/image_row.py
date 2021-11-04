@@ -101,7 +101,7 @@ def flip_device(device, about_axis="y"):
     device = device.copy(with_arrays=False)
     assert about_axis in "xy"
     index = 0 if about_axis == "y" else 1
-    polygons = device.films_list + device.holes_list + device.abstract_regions_list
+    polygons = list(device.polygons.values())
     for polygon in polygons:
         polygon.points[:, index] *= -1
     return device
@@ -109,7 +109,7 @@ def flip_device(device, about_axis="y"):
 
 def update_origin(device, x0=0, y0=0):
     device = device.copy(with_arrays=True, copy_arrays=True)
-    polygons = device.films_list + device.holes_list + device.abstract_regions_list
+    polygons = list(device.polygons.values())
     p0 = np.array([[x0, y0]])
     for polygon in polygons:
         polygon.points += p0
@@ -212,20 +212,19 @@ if __name__ == "__main__":
 
     squid = squids.ibm.medium.make_squid()
     squid = flip_device(squid, about_axis="x")
-    # sample = squids.ibm.large.make_squid()
-    sample = ibm_large.make_squid()
-    films = [film for film in sample.films_list if film.name != "pl_shield2"]
-    sample.films_list = films
-    holes = [hole for hole in sample.holes_list if hole.name != "pl_center"]
-    sample.holes_list = holes
-    for layer in sample.layers_list:
-        layer.london_lambda = 0.08
+    sample = squids.ibm.large.make_squid()
+    # films = [film for film in sample.films_list if film.name != "pl_shield2"]
+    # sample.films_list = films
+    # holes = [hole for hole in sample.holes_list if hole.name != "pl_center"]
+    # sample.holes_list = holes
+    # for layer in sample.layers_list:
+    #     layer.london_lambda = 0.08
     # sample = split_layer(sample, "BE", max_thickness=0.08)
     # sample = split_layer(sample, "W1", max_thickness=0.05)
     sample = flip_device(sample, about_axis="y")
 
-    squid.make_mesh(min_triangles=args.min_triangles, optimesh_steps=400)
-    sample.make_mesh(min_triangles=args.min_triangles, optimesh_steps=400)
+    squid.make_mesh(min_triangles=args.min_triangles, optimesh_steps=None)
+    sample.make_mesh(min_triangles=args.min_triangles, optimesh_steps=None)
 
     logging.info("Computing bare mutual inductance...")
     circulating_currents = {"fc_center": "1 mA"}
