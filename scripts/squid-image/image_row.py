@@ -256,13 +256,22 @@ if __name__ == "__main__":
             field_units=field_units,
         )
 
-        sample_solution = sc.solve(
-            device=_sample,
+        # sample_solution = sc.solve(
+        #     device=_sample,
+        #     applied_field=applied_field,
+        #     field_units=field_units,
+        #     iterations=iterations,
+        #     return_solutions=True,
+        # )[-1]
+
+        sample_solution, _ = sc.find_fluxoid_solution(
+            _sample,
+            {"pl_center": 0},
             applied_field=applied_field,
             field_units=field_units,
             iterations=iterations,
             return_solutions=True,
-        )[-1]
+        )
 
         logging.info("\tSolving for squid response to sample...")
         applied_field = sc.Parameter(

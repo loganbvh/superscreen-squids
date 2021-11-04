@@ -26,6 +26,6 @@ python image_row.py \
     --min-triangles=8000 \
     --x_range="-7, 5" \
     --y_range="-7, 5" \
-    --iterations=2
+    --iterations=5
 
 mv "slurm-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.out" $outdir/logs/
