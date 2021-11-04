@@ -227,8 +227,8 @@ if __name__ == "__main__":
                 [
                     [-1, -12],
                     [-15, -5],
-                    [-19, -3],
-                    [-19, 20],
+                    [-20, -3],
+                    [-20, 20],
                     [-12.5, 20],
                     [-11, 16],
                     [-1, -12],
@@ -255,7 +255,7 @@ if __name__ == "__main__":
             "narrow1",
             layer="W2",
             points=sc.geometry.rotate(
-                sc.geometry.rectangle(47, 1.0, center=(-1, 2.75)),
+                sc.geometry.rectangle(36, 1.0, center=(-4, 2.75)),
                 -27,
             ) 
         ),
@@ -263,7 +263,7 @@ if __name__ == "__main__":
             "narrow2",
             layer="W2",
             points=sc.geometry.rotate(
-                sc.geometry.rectangle(47, 1.0, center=(2.5, -4.25)),
+                sc.geometry.rectangle(39, 1.0, center=(2, -4.25)),
                 -27,
             ) 
         )
@@ -287,7 +287,7 @@ if __name__ == "__main__":
         layer.london_lambda = 0.08
 
     squid.make_mesh(min_triangles=args.min_triangles, optimesh_steps=400)
-    sample.make_mesh(min_triangles=args.min_triangles, optimesh_steps=400)
+    sample.make_mesh(min_triangles=7000, optimesh_steps=400)
 
     logging.info("Computing bare mutual inductance...")
     circulating_currents = {"fc_center": "1 mA"}
