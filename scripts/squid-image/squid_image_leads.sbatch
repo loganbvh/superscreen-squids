@@ -11,7 +11,7 @@ echo "slurm script:"
 echo "$(<$0)"
 
 echo "python script:"
-echo "$(<image_row.py)"
+echo "$(<image_row_leads.py)"
 
 # Activate conda env
 source $GROUP_HOME/miniconda3/bin/activate
@@ -22,10 +22,10 @@ mkdir -p $outdir/logs
 
 python image_row_leads.py \
     --outdir=$outdir \
-    --squid-height=0.150 \
+    --squid-height=0.225 \
     --min-triangles=8000 \
-    --x_range="-15, 15" \
+    --x_range="-17, 13" \
     --y_range="-15, 15" \
-    --iterations=2
+    --iterations=3
 
 mv "slurm-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.out" $outdir/logs/

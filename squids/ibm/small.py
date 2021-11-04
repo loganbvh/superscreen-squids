@@ -5,6 +5,7 @@ import os
 import numpy as np
 from scipy.io import loadmat
 
+import superscreen as sc
 from superscreen import Device, Layer, Polygon
 from superscreen.geometry import rotate
 
@@ -125,7 +126,7 @@ def make_squid():
 
     fc = np.concatenate(
         [
-            fc0[29:-2],
+            fc0[29:-3],
             np.array([[1.80, -0.19]]),
             np.array([[1.95, -0.50]]),
             np.array([[1.75, -0.90]]),
@@ -218,24 +219,21 @@ def make_squid():
     )
 
     pl0 = rotate(d.films["pl"].points, -45)
-    pl = np.concatenate(
-        [
-            pl0[:8],
-            np.array([[+0.75, -2.8]]),
-            np.array([[0.15, -2.8]]),
-            pl0[10:17],
-            np.array([[-0.15, -2.8]]),
-            np.array([[-0.75, -2.8]]),
-        ]
+    pl = (
+        np.concatenate(
+            [
+                pl0[:8],
+                np.array([[+0.70, -2.7]]),
+                np.array([[+0.75, -2.8]]),
+                np.array([[-0.75, -2.8]]),
+                np.array([[-0.70, -2.7]]),
+            ]
+        )
+        + np.array([0.02, 0])
     )
-    pl_hull = np.concatenate(
-        [
-            pl0[:8],
-            np.array([[+0.70, -2.7]]),
-            np.array([[+0.75, -2.8]]),
-            np.array([[-0.75, -2.8]]),
-            np.array([[-0.70, -2.7]]),
-        ]
+    y0 = pl[:, 1].max() - 0.15
+    pl_center = sc.geometry.rectangle(
+        0.2, 2.6, x_points=5, y_points=40, center=(0, -2.6 / 2 + y0)
     )
 
     bbox = np.array(
@@ -253,8 +251,8 @@ def make_squid():
         "pl_shield2": pl_shield2,
         "fc_shield": fc_shield,
         "pl": pl,
+        "pl_center": pl_center,
         "pl_shield": pl_shield,
-        "pl_hull": pl_hull,
         "bounding_box": bbox,
     }
 
@@ -268,11 +266,11 @@ def make_squid():
 
     holes = [
         Polygon("fc_center", layer="BE", points=polygons["fc_center"]),
+        Polygon("pl_center", layer="W1", points=polygons["pl_center"]),
     ]
 
     abstract_regions = [
         Polygon("bounding_box", layer="W1", points=polygons["bounding_box"]),
-        Polygon("pl_hull", layer="W1", points=polygons["pl_hull"]),
     ]
 
     return Device(

@@ -33,14 +33,20 @@ def huber_geometry(interp_points=101):
                 ::-1
             ],
             [[w_pl_outer / 2, y0_pl_leads]],
-            [[w_pl_center / 2, y0_pl_leads]],
-            ri_pl
-            * np.stack([np.cos(thetas_pl_center), np.sin(thetas_pl_center)], axis=1),
-            [[-w_pl_center / 2, y0_pl_leads]],
             [[-w_pl_outer / 2, y0_pl_leads]],
         ]
     )
     pl_points = sc.geometry.rotate(pl_points, pl_angle)
+
+    pl_center = np.concatenate(
+        [
+            [[w_pl_center / 2, y0_pl_leads + (ro_pl - ri_pl)]],
+            ri_pl
+            * np.stack([np.cos(thetas_pl_center), np.sin(thetas_pl_center)], axis=1),
+            [[-w_pl_center / 2, y0_pl_leads + (ro_pl - ri_pl)]],
+        ]
+    )
+    pl_center = sc.geometry.rotate(pl_center, pl_angle)
 
     pl_shield = np.concatenate(
         [
@@ -54,21 +60,6 @@ def huber_geometry(interp_points=101):
         ]
     )
     pl_shield = sc.geometry.rotate(pl_shield, pl_angle)
-
-    pl_hull = np.concatenate(
-        [
-            [[-w_pl_outer / 2, y0_pl_leads]],
-            ro_pl
-            * np.stack([np.cos(thetas_pl_outer), np.sin(thetas_pl_outer)], axis=1)[
-                ::-1
-            ],
-            [[w_pl_outer / 2, y0_pl_leads]],
-            [[w_pl_center / 2, y0_pl_leads]],
-            [[-w_pl_center / 2, y0_pl_leads]],
-            [[-w_pl_outer / 2, y0_pl_leads]],
-        ]
-    )
-    pl_hull = sc.geometry.rotate(pl_hull, pl_angle)
 
     ri_fc = 5.5
     ro_fc = 8.0
@@ -142,8 +133,8 @@ def huber_geometry(interp_points=101):
 
     polygons = {
         "pl": pl_points,
-        "pl_hull": pl_hull,
         "pl_shield": pl_shield,
+        "pl_center": pl_center,
         "fc": fc_outer_points,
         "fc_center": fc_center_points,
         "fc_shield": fc_shield,
@@ -196,8 +187,8 @@ def make_squid():
     ]
 
     holes = [
-        # sc.Polygon("fc_center", layer="BE", points=polygons["fc_center"][20:-25]),
         sc.Polygon("fc_center", layer="BE", points=polygons["fc_center"]),
+        sc.Polygon("pl_center", layer="W1", points=polygons["pl_center"]),
     ]
 
     bbox = np.array(
@@ -211,7 +202,6 @@ def make_squid():
 
     abstract_regions = [
         sc.Polygon("bounding_box", layer="W1", points=bbox),
-        sc.Polygon("pl_hull", layer="W1", points=polygons["pl_hull"]),
     ]
 
     device = sc.Device(
