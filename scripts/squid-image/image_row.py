@@ -233,7 +233,7 @@ if __name__ == "__main__":
         return_solutions=True,
     )[-1]
 
-    pl_fluxoid = sum(fc_solution.hole_fluxoid("pl_center", units="Phi_0"))
+    pl_fluxoid = sum(fc_solution.hole_fluxoid("pl_center", flux_units="Phi_0"))
     m_no_sample = (pl_fluxoid / I_fc).to("Phi_0/A")
     logging.info(f"\tPhi = {pl_fluxoid:~.3fP}")
     logging.info(f"\tM = {m_no_sample:~.3fP}")
@@ -288,7 +288,7 @@ if __name__ == "__main__":
             iterations=iterations,
         )[-1]
         logging.info("\tComputing pickup loop flux...")
-        fluxoid = sum(solution.hole_fluxoid("pl_center", units="Phi_0"))
+        fluxoid = sum(solution.hole_fluxoid("pl_center", flux_units="Phi_0"))
         flux.append(fluxoid.magnitude)
         logging.info(f"({i + 1} / {len(xs)}) flux: {flux}")
 
