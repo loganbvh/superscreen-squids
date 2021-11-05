@@ -233,10 +233,10 @@ if __name__ == "__main__":
         return_solutions=True,
     )[-1]
 
-    pl_fluxoid = sum(fc_solution.hole_fluxoid("pl_center", flux_units="Phi_0"))
-    m_no_sample = (pl_fluxoid / I_fc).to("Phi_0/A")
-    logging.info(f"\tPhi = {pl_fluxoid:~.3fP}")
-    logging.info(f"\tM = {m_no_sample:~.3fP}")
+    # pl_fluxoid = sum(fc_solution.hole_fluxoid("pl_center", flux_units="Phi_0"))
+    # m_no_sample = (pl_fluxoid / I_fc).to("Phi_0/A")
+    # logging.info(f"\tPhi = {pl_fluxoid:~.3fP}")
+    # logging.info(f"\tM = {m_no_sample:~.3fP}")
 
     sample_x0s = xs
     sample_y0 = ys[int(array_id)]
@@ -255,14 +255,6 @@ if __name__ == "__main__":
             fc_solution=fc_solution,
             field_units=field_units,
         )
-
-        # sample_solution = sc.solve(
-        #     device=_sample,
-        #     applied_field=applied_field,
-        #     field_units=field_units,
-        #     iterations=iterations,
-        #     return_solutions=True,
-        # )[-1]
 
         sample_solution, _ = sc.find_fluxoid_solution(
             _sample,
@@ -295,13 +287,15 @@ if __name__ == "__main__":
     # Units: Phi_0
     flux = np.array(flux)
     # Units: Phi_0 / A
-    susc = flux / I_fc.to("A").magnitude - m_no_sample.magnitude
+    mutual = flux / I_fc.to("A").magnitude
     data = dict(
         row=int(array_id),
+        I_fc=I_fc.to("A").magnitude,
+        current_units="A",
         flux=flux,
         flux_units="Phi_0",
-        susc=susc,
-        susc_units="Phi_0/A",
+        mutual=mutual,
+        mutual_units="Phi_0/A",
         xs=xs,
         ys=ys,
         y=sample_y0,
