@@ -129,12 +129,14 @@ def sample_applied_field(x, y, z, fc_solution=None, field_units="mT"):
 
 def squid_applied_field(x, y, z, sample_solution=None, field_units="mT"):
     x, y = np.atleast_1d(x, y)
-    f = sample_solution.field_at_position(
+    fdict = sample_solution.field_at_position(
         np.stack([x, y], axis=1),
         zs=z,
         units=field_units,
         with_units=False,
+        return_sum=False,
     )
+    f = sum(field for label, field in fdict.items() if label != "applied_field")
     return f
 
 
@@ -241,7 +243,8 @@ if __name__ == "__main__":
     sample_x0s = xs
     sample_y0 = ys[int(array_id)]
 
-    flux = []
+    flux_part = []
+    supercurrent_part = []
     for i, x0 in enumerate(sample_x0s):
 
         logging.info(
@@ -262,7 +265,6 @@ if __name__ == "__main__":
             applied_field=applied_field,
             field_units=field_units,
             iterations=iterations,
-            return_solutions=True,
         )
 
         logging.info("\tSolving for squid response to sample...")
@@ -275,17 +277,20 @@ if __name__ == "__main__":
         solution = sc.solve(
             device=squid,
             applied_field=applied_field,
+            circulating_currents=circulating_currents,
             field_units=field_units,
             return_solutions=True,
             iterations=iterations,
         )[-1]
         logging.info("\tComputing pickup loop flux...")
-        fluxoid = sum(solution.hole_fluxoid("pl_center", flux_units="Phi_0"))
-        flux.append(fluxoid.magnitude)
-        logging.info(f"({i + 1} / {len(xs)}) flux: {flux}")
+        fluxoid = solution.hole_fluxoid("pl_center", flux_units="Phi_0")
+        flux_part.append(fluxoid.flux_part.magnitude)
+        supercurrent_part.append(fluxoid.supercurrent_part.magnitude)
+        logging.info(f"({i + 1} / {len(xs)}) flux: {flux_part}")
 
     # Units: Phi_0
-    flux = np.array(flux)
+    flux = np.array(flux_part)
+    supercurrent = np.array(supercurrent_part)
     # Units: Phi_0 / A
     mutual = flux / I_fc.to("A").magnitude
     data = dict(
@@ -293,6 +298,7 @@ if __name__ == "__main__":
         I_fc=I_fc.to("A").magnitude,
         current_units="A",
         flux=flux,
+        supercurrent=supercurrent,
         flux_units="Phi_0",
         mutual=mutual,
         mutual_units="Phi_0/A",
