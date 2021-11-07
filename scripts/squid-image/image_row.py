@@ -261,7 +261,7 @@ if __name__ == "__main__":
 
         sample_solution, _ = sc.find_fluxoid_solution(
             _sample,
-            {"pl_center": 0},
+            fluxoids={"pl_center": 0},
             applied_field=applied_field,
             field_units=field_units,
             iterations=iterations,
