@@ -22,7 +22,7 @@ mkdir -p $outdir/logs
 
 python image_row.py \
     --outdir=$outdir \
-    --squid-height=0.10 \
+    --squid-height=0.05 \
     --min-triangles=8000 \
     --x_range="-7, 5" \
     --y_range="-7, 5" \
