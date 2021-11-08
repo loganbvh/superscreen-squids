@@ -277,7 +277,7 @@ if __name__ == "__main__":
         solution = sc.solve(
             device=squid,
             applied_field=applied_field,
-            circulating_currents=circulating_currents,
+            circulating_currents=None,
             field_units=field_units,
             return_solutions=True,
             iterations=iterations,
