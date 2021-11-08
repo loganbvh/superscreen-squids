@@ -136,7 +136,7 @@ def squid_applied_field(x, y, z, sample_solution=None, field_units="mT"):
         with_units=False,
         return_sum=False,
     )
-    f = sum(field for label, field in fdict.items() if label != "applied_field")
+    f = sum(field for label, field in fdict.items())
     return f
 
 
@@ -235,10 +235,10 @@ if __name__ == "__main__":
         return_solutions=True,
     )[-1]
 
-    # pl_fluxoid = sum(fc_solution.hole_fluxoid("pl_center", units="Phi_0"))
-    # m_no_sample = (pl_fluxoid / I_fc).to("Phi_0/A")
-    # logging.info(f"\tPhi = {pl_fluxoid:~.3fP}")
-    # logging.info(f"\tM = {m_no_sample:~.3fP}")
+    pl_fluxoid = sum(fc_solution.hole_fluxoid("pl_center", units="Phi_0"))
+    m_no_sample = (pl_fluxoid / I_fc).to("Phi_0/A")
+    logging.info(f"\tPhi = {pl_fluxoid:~.3fP}")
+    logging.info(f"\tM = {m_no_sample:~.3fP}")
 
     sample_x0s = xs
     sample_y0 = ys[int(array_id)]
@@ -301,6 +301,7 @@ if __name__ == "__main__":
         supercurrent=supercurrent,
         flux_units="Phi_0",
         mutual=mutual,
+        mutual_no_sample=m_no_sample.to("Phi_0 / A").m,
         mutual_units="Phi_0/A",
         xs=xs,
         ys=ys,
