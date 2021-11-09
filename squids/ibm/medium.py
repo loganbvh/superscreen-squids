@@ -99,7 +99,7 @@ def squid_geometry(interp_points=101):
     theta0_fc_outer = np.arcsin(x0_fc_outer / ro_fc)
     y0_fc_outer = ri_fc * np.cos(theta0_fc_outer)
     thetas_fc_outer = (
-        np.linspace(theta0_fc_outer, 2 * np.pi - theta0_fc_outer, 101) - np.pi / 2
+        np.linspace(theta0_fc_outer, 2 * np.pi - theta0_fc_outer, 151) - np.pi / 2
     )
 
     fc_outer_points = np.concatenate(

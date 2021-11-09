@@ -67,7 +67,7 @@ def split_layer(device, layer_name, max_thickness=0.05):
                 new_hole = hole.copy()
                 new_hole.name = hole_name
                 new_hole.layer = new_layer_name
-                new_holes[film_name] = new_hole
+                new_holes[hole_name] = new_hole
         else:
             new_holes[name] = hole
 
@@ -129,14 +129,13 @@ def sample_applied_field(x, y, z, fc_solution=None, field_units="mT"):
 
 def squid_applied_field(x, y, z, sample_solution=None, field_units="mT"):
     x, y = np.atleast_1d(x, y)
-    fdict = sample_solution.field_at_position(
+    f = sample_solution.field_at_position(
         np.stack([x, y], axis=1),
         zs=z,
         units=field_units,
         with_units=False,
-        return_sum=False,
+        return_sum=True,
     )
-    f = sum(field for label, field in fdict.items())
     return f
 
 
@@ -165,7 +164,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--iterations",
         type=int,
-        default=2,
+        default=3,
         help="Number of solver iterations to perform.",
     )
     parser.add_argument(
@@ -218,9 +217,12 @@ if __name__ == "__main__":
     ys = np.linspace(ystart, ystop, int(np.ceil((ystop - ystart) / pixel_size)))
 
     squid = squids.ibm.medium.make_squid()
-    squid = flip_device(squid, about_axis="x")
+    # squid = flip_device(squid, about_axis="x")
     sample = squids.ibm.large.make_squid()
+    films = [film for film in sample.films_list if film.name != "pl_shield2"]
+    sample.films_list = films
     sample = flip_device(sample, about_axis="y")
+    sample = flip_device(sample, about_axis="x")
 
     squid.make_mesh(min_triangles=args.min_triangles, optimesh_steps=optimesh_steps)
     sample.make_mesh(min_triangles=args.min_triangles, optimesh_steps=optimesh_steps)
@@ -232,7 +234,6 @@ if __name__ == "__main__":
         device=squid,
         circulating_currents=circulating_currents,
         iterations=iterations,
-        return_solutions=True,
     )[-1]
 
     pl_fluxoid = sum(fc_solution.hole_fluxoid("pl_center", units="Phi_0"))
@@ -251,7 +252,7 @@ if __name__ == "__main__":
             f"({i + 1} / {len(xs)}) Solving for sample response to field coil..."
         )
         _sample = mirror_layers(sample, about=-abs(squid_height))
-        _sample = update_origin(_sample, x0=-x0, y0=-sample_y0)
+        _sample = update_origin(_sample, x0=x0, y0=sample_y0)
 
         applied_field = sc.Parameter(
             sample_applied_field,
@@ -279,7 +280,6 @@ if __name__ == "__main__":
             applied_field=applied_field,
             circulating_currents=None,
             field_units=field_units,
-            return_solutions=True,
             iterations=iterations,
         )[-1]
         logging.info("\tComputing pickup loop flux...")
