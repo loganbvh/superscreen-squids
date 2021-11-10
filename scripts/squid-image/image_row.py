@@ -22,77 +22,77 @@ def mirror_layers(device, about=0, in_place=False):
     return device
 
 
-def split_layer(device, layer_name, max_thickness=0.05):
-    """Splits a given layer into multiple thinner layers."""
-    layers = device.layers
-    films = device.films
-    holes = device.holes
-    abstract_regions = device.abstract_regions
+# def split_layer(device, layer_name, max_thickness=0.05):
+#     """Splits a given layer into multiple thinner layers."""
+#     layers = device.layers
+#     films = device.films
+#     holes = device.holes
+#     abstract_regions = device.abstract_regions
 
-    layer_to_split = layers.pop(layer_name)
-    london_lambda = layer_to_split.london_lambda
-    d = layer_to_split.thickness
+#     layer_to_split = layers.pop(layer_name)
+#     london_lambda = layer_to_split.london_lambda
+#     d = layer_to_split.thickness
 
-    num_layers, remainder = divmod(d, max_thickness)
-    num_layers = int(num_layers)
-    new_ds = [max_thickness for _ in range(num_layers)]
-    if abs(remainder) / d > 1e-6:
-        num_layers += 1
-        new_ds.append(remainder)
-    new_layers = {}
-    for i, new_d in enumerate(new_ds):
-        name = f"{layer_name}_{i}"
-        z = i * max_thickness + new_d / 2
-        new_layers[name] = sc.Layer(
-            name, london_lambda=london_lambda, thickness=new_d, z0=z
-        )
+#     num_layers, remainder = divmod(d, max_thickness)
+#     num_layers = int(num_layers)
+#     new_ds = [max_thickness for _ in range(num_layers)]
+#     if abs(remainder) / d > 1e-6:
+#         num_layers += 1
+#         new_ds.append(remainder)
+#     new_layers = {}
+#     for i, new_d in enumerate(new_ds):
+#         name = f"{layer_name}_{i}"
+#         z = i * max_thickness + new_d / 2
+#         new_layers[name] = sc.Layer(
+#             name, london_lambda=london_lambda, thickness=new_d, z0=z
+#         )
 
-    new_films = {}
-    for name, film in films.items():
-        if film.layer == layer_name:
-            for i, new_layer_name in enumerate(new_layers):
-                film_name = f"{name}_{i}"
-                new_film = film.copy()
-                new_film.name = film_name
-                new_film.layer = new_layer_name
-                new_films[film_name] = new_film
-        else:
-            new_films[name] = film
+#     new_films = {}
+#     for name, film in films.items():
+#         if film.layer == layer_name:
+#             for i, new_layer_name in enumerate(new_layers):
+#                 film_name = f"{name}_{i}"
+#                 new_film = film.copy()
+#                 new_film.name = film_name
+#                 new_film.layer = new_layer_name
+#                 new_films[film_name] = new_film
+#         else:
+#             new_films[name] = film
 
-    new_holes = {}
-    for name, hole in holes.items():
-        if hole.layer == layer_name:
-            for i, new_layer_name in enumerate(new_layers):
-                hole_name = f"{name}_{i}"
-                new_hole = hole.copy()
-                new_hole.name = hole_name
-                new_hole.layer = new_layer_name
-                new_holes[hole_name] = new_hole
-        else:
-            new_holes[name] = hole
+#     new_holes = {}
+#     for name, hole in holes.items():
+#         if hole.layer == layer_name:
+#             for i, new_layer_name in enumerate(new_layers):
+#                 hole_name = f"{name}_{i}"
+#                 new_hole = hole.copy()
+#                 new_hole.name = hole_name
+#                 new_hole.layer = new_layer_name
+#                 new_holes[hole_name] = new_hole
+#         else:
+#             new_holes[name] = hole
 
-    new_abstract_regions = {}
-    for name, region in abstract_regions.items():
-        if region.layer == layer_name:
-            for i, new_layer_name in enumerate(new_layers):
-                region_name = f"{name}_{i}"
-                new_region = region.copy()
-                new_region.name = region_name
-                new_region.layer = new_layer_name
-                new_abstract_regions[region_name] = new_region
-        else:
-            new_abstract_regions[name] = region
+#     new_abstract_regions = {}
+#     for name, region in abstract_regions.items():
+#         if region.layer == layer_name:
+#             for i, new_layer_name in enumerate(new_layers):
+#                 region_name = f"{name}_{i}"
+#                 new_region = region.copy()
+#                 new_region.name = region_name
+#                 new_region.layer = new_layer_name
+#                 new_abstract_regions[region_name] = new_region
+#         else:
+#             new_abstract_regions[name] = region
 
-    new_layers.update(layers)
+#     new_layers.update(layers)
 
-    return sc.Device(
-        device.name,
-        layers=new_layers,
-        films=new_films,
-        holes=new_holes,
-        abstract_regions=new_abstract_regions,
-        length_units=device.length_units,
-    )
+#     return sc.Device(
+#         device.name,
+#         layers=new_layers,
+#         films=new_films,
+#         holes=new_holes,
+#         abstract_regions=new_abstract_regions,
+#         length_units=device.length_units,
+#     )
 
 
 def flip_device(device, about_axis="y"):
@@ -111,7 +111,7 @@ def update_origin(device, x0=0, y0=0):
     p0 = np.array([[x0, y0]])
     for polygon in polygons:
         polygon.points += p0
-    if hasattr(device, "points"):
+    if getattr(device, "points", None) is not None:
         device.points += p0
     return device
 
@@ -217,13 +217,9 @@ if __name__ == "__main__":
     ys = np.linspace(ystart, ystop, int(np.ceil((ystop - ystart) / pixel_size)))
 
     squid = squids.ibm.medium.make_squid()
-    # squid = flip_device(squid, about_axis="x")
     sample = squids.ibm.large.make_squid()
-    films = [film for film in sample.films_list if film.name != "pl_shield2"]
-    sample.films_list = films
-
-    for layer in sample.layers_list:
-        layer.london_lambda = layer.london_lambda / np.sqrt(2)
+    # films = [film for film in sample.films_list if film.name != "pl_shield2"]
+    # sample.films_list = films
 
     sample = flip_device(sample, about_axis="y")
     sample = flip_device(sample, about_axis="x")
@@ -255,7 +251,7 @@ if __name__ == "__main__":
         logging.info(
             f"({i + 1} / {len(xs)}) Solving for sample response to field coil..."
         )
-        _sample = mirror_layers(sample, about=-abs(squid_height))
+        _sample = mirror_layers(sample, about=squid_height)
         _sample = update_origin(_sample, x0=x0, y0=sample_y0)
 
         applied_field = sc.Parameter(
@@ -290,13 +286,18 @@ if __name__ == "__main__":
         fluxoid = solution.hole_fluxoid("pl_center", units="Phi_0")
         flux_part.append(fluxoid.flux_part.magnitude)
         supercurrent_part.append(fluxoid.supercurrent_part.magnitude)
+        logging.info(
+            f"({i + 1} / {len(xs)}) mutual: "
+            f"{(sum(fluxoid) / I_fc - m_no_sample).to('Phi_0 / A')}"
+        )
         logging.info(f"({i + 1} / {len(xs)}) flux: {flux_part}")
+
 
     # Units: Phi_0
     flux = np.array(flux_part)
     supercurrent = np.array(supercurrent_part)
     # Units: Phi_0 / A
-    mutual = flux / I_fc.to("A").magnitude
+    mutual = (flux + supercurrent) / I_fc.to("A").magnitude
     data = dict(
         row=int(array_id),
         I_fc=I_fc.to("A").magnitude,
