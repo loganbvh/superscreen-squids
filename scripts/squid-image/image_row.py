@@ -221,6 +221,10 @@ if __name__ == "__main__":
     sample = squids.ibm.large.make_squid()
     films = [film for film in sample.films_list if film.name != "pl_shield2"]
     sample.films_list = films
+
+    for layer in sample.layers_list:
+        layer.london_lambda = layer.london_lambda / np.sqrt(2)
+
     sample = flip_device(sample, about_axis="y")
     sample = flip_device(sample, about_axis="x")
 
