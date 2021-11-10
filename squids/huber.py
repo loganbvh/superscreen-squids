@@ -167,9 +167,16 @@ def make_squid():
     d_i2 = 0.350
     d_w2 = 0.25
 
-    z0_w2 = d_w2 / 2
-    z0_w1 = z0_w2 + d_w2 / 2 + d_i2 + d_w1 / 2
-    z0_be = d_w2 + d_i2 + d_w1 + d_i1 + d_be / 2
+    # # align ==  "middle"
+    # z0_w2 = d_w2 / 2
+    # z0_w1 = z0_w2 + d_w2 / 2 + d_i2 + d_w1 / 2
+    # z0_be = d_w2 + d_i2 + d_w1 + d_i1 + d_be / 2
+
+    # align == "bottom"
+    z0 = 0
+    z0_w2 = z0
+    z0_w1 = z0_w2 + d_w2 + d_i2
+    z0_be = z0_w2 + d_w2 + d_i2 + d_w1 + d_i1
 
     polygons = huber_geometry(interp_points=interp_points)
 

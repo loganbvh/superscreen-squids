@@ -4,6 +4,7 @@ import numpy as np
 
 import superscreen as sc
 
+from .layers import ibm_squid_layers
 
 def squid_geometry(interp_points=101):
 
@@ -155,34 +156,8 @@ def squid_geometry(interp_points=101):
 def make_squid(interp_points=121):
     length_units = "um"
 
-    thicknesses = {"W2": 0.2, "I2": 0.13, "W1": 0.1, "I1": 0.15, "BE": 0.16}
-    z0 = 0
-    heights = {
-        "W2": z0 + thicknesses["W2"] / 2,
-        "W1": (
-            z0 + sum([thicknesses[k] for k in ["W2", "I2"]]) + thicknesses["W1"] / 2
-        ),
-        "BE": (
-            z0
-            + sum([thicknesses[k] for k in ["W2", "I2", "W1", "I1"]])
-            + thicknesses["BE"] / 2
-        ),
-    }
-
-    d_w2 = thicknesses["W2"]
-    d_w1 = thicknesses["W1"]
-    d_be = thicknesses["BE"]
-    z0_w2 = heights["W2"]
-    z0_w1 = heights["W1"]
-    z0_be = heights["BE"]
-
     polygons = squid_geometry(interp_points=interp_points)
 
-    layers = [
-        sc.Layer("W2", london_lambda=0.08, thickness=d_w2, z0=z0_w2),
-        sc.Layer("W1", london_lambda=0.08, thickness=d_w1, z0=z0_w1),
-        sc.Layer("BE", london_lambda=0.08, thickness=d_be, z0=z0_be),
-    ]
     films = [
         sc.Polygon("fc", layer="BE", points=polygons["fc"]),
         sc.Polygon("fc_shield", layer="W1", points=polygons["fc_shield"]),
@@ -203,7 +178,7 @@ def make_squid(interp_points=121):
 
     device = sc.Device(
         "ibm_300nm",
-        layers=layers,
+        layers=ibm_squid_layers(),
         films=films,
         holes=holes,
         abstract_regions=abstract_regions,

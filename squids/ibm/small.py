@@ -9,6 +9,8 @@ import superscreen as sc
 from superscreen import Device, Layer, Polygon
 from superscreen.geometry import rotate
 
+from .layers import ibm_squid_layers
+
 
 def make_layout_small_susc_jkr():
     mat_path = os.path.join(os.path.dirname(__file__), "small_susc.mat")
@@ -52,18 +54,6 @@ def make_layout_small_susc_jkr():
     pl_centers[:, 0] = (pl_centers[:, 0] - origin[0, 0]) * scale_factor
     pl_centers[:, 1] = -(pl_centers[:, 1] - origin[0, 1]) * scale_factor
 
-    thicknesses = {"W2": 0.2, "I2": 0.13, "W1": 0.1, "I1": 0.15, "BE": 0.16}
-    heights = {
-        "W2": z0 + thicknesses["W2"] / 2,
-        "W1": (
-            z0 + sum([thicknesses[k] for k in ["W2", "I2"]]) + thicknesses["W1"] / 2
-        ),
-        "BE": (
-            z0
-            + sum([thicknesses[k] for k in ["W2", "I2", "W1", "I1"]])
-            + thicknesses["BE"] / 2
-        ),
-    }
     polygons = {
         "fc": np.concatenate([fc_in[:-2, :], np.flipud(fc_out)]),
         "fc_shield": np.append(fc_shield, fc_shield[0].reshape([-1, 2]), axis=0),
@@ -72,26 +62,6 @@ def make_layout_small_susc_jkr():
         "pl": np.append(pl, pl[0].reshape([-1, 2]), axis=0),
     }
 
-    layers = {
-        "W2": Layer(
-            "W2",
-            thickness=thicknesses["W2"],
-            london_lambda=london_lambda,
-            z0=heights["W2"],
-        ),
-        "W1": Layer(
-            "W1",
-            thickness=thicknesses["W1"],
-            london_lambda=london_lambda,
-            z0=heights["W1"],
-        ),
-        "BE": Layer(
-            "BE",
-            thickness=thicknesses["BE"],
-            london_lambda=london_lambda,
-            z0=heights["BE"],
-        ),
-    }
     films = {
         "fc": Polygon("fc", layer="BE", points=polygons["fc"]),
         "pl_shield2": Polygon("pl_shield2", layer="BE", points=polygons["pl_shield2"]),
@@ -111,7 +81,7 @@ def make_layout_small_susc_jkr():
     name = "ibm_100nm"
     return Device(
         name,
-        layers=layers.values(),
+        layers=ibm_squid_layers(),
         films=films.values(),
         holes=holes.values(),
         abstract_regions=flux_regions.values(),
