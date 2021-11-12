@@ -200,7 +200,7 @@ def make_squid(interp_points=121):
         sc.Polygon(
             "bounding_box",
             layer="W1",
-            points=sc.geometry.rectangle(12, 14, center=(1, -2)),
+            points=sc.geometry.box(12, 14, center=(1, -2)),
         ),
         sc.Polygon("pl_hull", layer="W1", points=polygons["pl_hull"]),
     ]

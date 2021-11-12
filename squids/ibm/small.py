@@ -3,11 +3,11 @@
 import os
 
 import numpy as np
+from numpy.lib.polynomial import poly
 from scipy.io import loadmat
 
 import superscreen as sc
-from superscreen import Device, Layer, Polygon
-from superscreen.geometry import rotate
+from superscreen import Device, Layer, Polygon, geometry
 
 from .layers import ibm_squid_layers
 
@@ -54,60 +54,26 @@ def make_layout_small_susc_jkr():
     pl_centers[:, 0] = (pl_centers[:, 0] - origin[0, 0]) * scale_factor
     pl_centers[:, 1] = -(pl_centers[:, 1] - origin[0, 1]) * scale_factor
 
+
     polygons = {
         "fc": np.concatenate([fc_in[:-2, :], np.flipud(fc_out)]),
-        "fc_shield": np.append(fc_shield, fc_shield[0].reshape([-1, 2]), axis=0),
-        "pl_shield": np.append(pl_shield, pl_shield[0].reshape([-1, 2]), axis=0),
-        "pl_shield2": np.append(pl_shield_2, pl_shield_2[0].reshape([-1, 2]), axis=0),
-        "pl": np.append(pl, pl[0].reshape([-1, 2]), axis=0),
+        "fc_shield": fc_shield,
+        "pl_shield": pl_shield,
+        "pl_shield2": pl_shield_2,
+        "pl": pl,
     }
-
-    films = {
-        "fc": Polygon("fc", layer="BE", points=polygons["fc"]),
-        "pl_shield2": Polygon("pl_shield2", layer="BE", points=polygons["pl_shield2"]),
-        "fc_shield": Polygon("fc_shield", layer="W1", points=polygons["fc_shield"]),
-        "pl": Polygon("pl", layer="W1", points=polygons["pl"]),
-        "pl_shield": Polygon("pl_shield", layer="W2", points=polygons["pl_shield"]),
-    }
-    holes = {}
-    flux_regions = {
-        "pl_center": Polygon(
-            "pl_center",
-            layer="W1",
-            points=np.append(pl_centers, pl_centers[0].reshape([-1, 2]), axis=0),
-        ),
-    }
-
-    name = "ibm_100nm"
-    return Device(
-        name,
-        layers=ibm_squid_layers(),
-        films=films.values(),
-        holes=holes.values(),
-        abstract_regions=flux_regions.values(),
-    )
-
+    return polygons
 
 def make_squid():
 
-    d = make_layout_small_susc_jkr()
+    polygons = make_layout_small_susc_jkr()
 
-    fc0 = rotate(d.films["fc"].points, -45)
+    fc0 = geometry.rotate(polygons["fc"], -45)
 
     fc = np.concatenate(
         [
             fc0[29:-3],
-            np.array([[1.80, -0.19]]),
-            np.array([[1.95, -0.50]]),
-            np.array([[1.75, -0.90]]),
-            np.array([[1.50, -1.20]]),
-            np.array([[1.30, -1.30]]),
-        ]
-    )
-
-    fc = np.concatenate(
-        [
-            fc[1:-4],
+            [[1.80, -0.19]],
             [[1.95, -0.5]],
             [[1.97, -0.8]],
             [[1.97, -1.2]],
@@ -124,12 +90,7 @@ def make_squid():
         ]
     )
 
-    fc_center = np.concatenate(
-        [
-            np.array([[1.45, -0.65]]),
-            fc0[1:28][::-1],
-        ]
-    )
+    fc_center = np.concatenate([[[1.45, -0.65]], fc0[1:28][::-1]])
 
     fc_center = np.concatenate(
         [
@@ -188,7 +149,7 @@ def make_squid():
         ]
     )
 
-    pl0 = rotate(d.films["pl"].points, -45)
+    pl0 = geometry.rotate(polygons["pl"], -45)
     pl = (
         np.concatenate(
             [
@@ -202,9 +163,7 @@ def make_squid():
         + np.array([0.02, 0])
     )
     y0 = pl[:, 1].max() - 0.15
-    pl_center = sc.geometry.rectangle(
-        0.2, 2.6, x_points=5, y_points=40, center=(0, -2.6 / 2 + y0)
-    )
+    pl_center = sc.geometry.box(0.2, 2.6, center=(0, -2.6 / 2 + y0))
 
     bbox = np.array(
         [
@@ -245,7 +204,7 @@ def make_squid():
 
     return Device(
         "ibm_100nm",
-        layers=d.layers_list,
+        layers=ibm_squid_layers(),
         films=films,
         holes=holes,
         abstract_regions=abstract_regions,

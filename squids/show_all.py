@@ -34,6 +34,6 @@ if __name__ == "__main__":
 
     for ax, make_squid in zip(axes, squid_funcs):
         squid = make_squid()
-        squid.plot_polygons(ax=ax, legend=False)
+        squid.plot(ax=ax, legend=False)
         ax.set_title(make_squid.__module__)
     plt.show()

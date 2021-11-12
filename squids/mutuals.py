@@ -3,7 +3,6 @@ import logging
 
 import matplotlib.pyplot as plt
 import superscreen as sc
-from superscreen.fluxoid import make_fluxoid_polygons
 
 from . import huber
 from . import ibm
@@ -22,7 +21,7 @@ def get_mutual(
         squid.layers["BE"].london_lambda = fc_lambda
     print(squid)
     fluxoid_polys = sc.make_fluxoid_polygons(squid)
-    fig, ax = squid.plot_polygons()
+    fig, ax = squid.plot()
     for name, poly in fluxoid_polys.items():
         ax.plot(*sc.geometry.close_curve(poly).T, label=name + "_fluxoid")
     ax.legend(bbox_to_anchor=(1, 1))
