@@ -163,7 +163,7 @@ def make_squid():
         + np.array([0.02, 0])
     )
     y0 = pl[:, 1].max() - 0.15
-    pl_center = sc.geometry.box(0.2, 2.6, center=(0, -2.6 / 2 + y0))
+    pl_center = sc.geometry.box(0.225, 2.6, center=(0, -2.6 / 2 + y0))
 
     bbox = np.array(
         [
@@ -195,7 +195,7 @@ def make_squid():
 
     holes = [
         Polygon("fc_center", layer="BE", points=polygons["fc_center"]),
-        Polygon("pl_center", layer="W1", points=polygons["pl_center"]),
+        Polygon("pl_center", layer="W1", points=polygons["pl_center"]).resample(),
     ]
 
     abstract_regions = [
