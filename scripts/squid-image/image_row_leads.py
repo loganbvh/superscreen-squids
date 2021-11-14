@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+from typing import List
 
 import numpy as np
 
@@ -10,9 +11,155 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
 import squids
 
 
+def lambda_bcs(lambda0: float, T: float, Tc: float) -> float:
+    t = T / Tc
+    return lambda0 / np.sqrt(1 - t ** 4) 
+
+
+def ibm_squid_layers(
+    align: str = "bottom",
+    london_lambda: float = 0.08,
+    z0: float = 0.0,
+) -> List[sc.Layer]:
+    """Return a list of superscreen.Layers representing the superconducting layers
+    in IBM SQUID susceptometers.
+
+    See https://arxiv.org/pdf/1605.09483.pdf, Figure 8.
+
+    Args:
+        align: Whether to position the 2D model layer at the top, middle, or bottom
+            of the phyical 3D metal layer.
+        london_lambda: The London penetration depth for the superconducting films,
+            in microns.
+        z0: The vertical position of the bottom of W2, i.e. the surface of the
+            SQUID chip.
+
+    Returns:
+        A list a Layer objects representing the SQUID wiring layers.
+    
+    """
+    assert align in ["top", "middle", "bottom"]
+
+    # Layer thicknesses in microns.
+    d_W2 = 0.20
+    d_I2 = 0.13
+    d_W1 = 0.10
+    d_I1 = 0.15
+    d_BE = 0.16
+    
+    # Add more room between layers
+    d_I2 *= 2
+    d_I1 *= 2
+
+    # Metal layer vertical positions in microns.
+    if align == "bottom":
+        z0_W2 = z0
+        z0_W1 = z0 + d_W2 + d_I2
+        z0_BE = z0 + d_W2 + d_I2 + d_W1 + d_I1
+    elif align == "middle":
+        z0_W2 = z0 + d_W2 / 2
+        z0_W1 = z0 + d_W2 / 2 + d_I2 + d_W1 / 2
+        z0_BE = z0 + d_W2 / 2 + d_I2 + d_W1 / 2 + d_I1 + d_BE / 2
+    else:
+        z0_W2 = z0 + d_W2
+        z0_W1 = z0 + d_W2 + d_I2 + d_W1
+        z0_BE = z0 + d_W2 + d_I2 + d_W1 + d_I1 + d_BE
+
+    return [
+        sc.Layer("W2", london_lambda=london_lambda, thickness=d_W2, z0=z0_W2),
+        sc.Layer("W1", london_lambda=london_lambda, thickness=d_W1, z0=z0_W1),
+        sc.Layer("BE", london_lambda=london_lambda, thickness=d_BE, z0=z0_BE),
+    ]
+
+
+def make_sample(film_points=101):
+    films = [
+        sc.Polygon(
+            "xwide1",
+            layer="W1",
+            points=sc.geometry.rotate(
+                sc.geometry.box(15, 41, center=(6, -1)),
+                19,
+            ),
+        ),
+        sc.Polygon(
+            "xwide2",
+            layer="W1",
+            points=np.array(
+                [
+                    [-1, -12],
+                    [-15, -5],
+                    [-20, -3],
+                    [-20, 20],
+                    [-12.5, 20],
+                    [-11, 16],
+                    [-1, -12],
+                ]
+            ),
+        ),
+        sc.Polygon(
+            "wide1",
+            layer="BE",
+            points=sc.geometry.rotate(
+                sc.geometry.box(3, 41, center=(9.5, -1)),
+                19,
+            )
+        ),
+        sc.Polygon(
+            "wide2",
+            layer="BE",
+            points=sc.geometry.rotate(
+                sc.geometry.box(3, 41, center=(2.5, -1)),
+                19,
+            )
+        ),
+        sc.Polygon(
+            "narrow1",
+            layer="W2",
+            points=sc.geometry.rotate(
+                sc.geometry.box(45, 1.0, center=(-2, 2.75)),
+                -27,
+            ),
+        ),
+        sc.Polygon(
+            "narrow2",
+            layer="W2",
+            points=sc.geometry.rotate(
+                sc.geometry.box(45, 1.0, center=(2, -4.25)),
+                -27,
+            ),
+        ),
+    ]
+    
+    bounding_box = sc.Polygon(
+        "bounding_box", points=sc.geometry.box(24, 24, center=(0, 0))
+    )
+    
+    for film in films:
+        film.points += np.array([[-1, 1]])
+    
+    films = [
+        f.resample(film_points).intersection(bounding_box)
+        for f in films
+    ]
+    
+
+    bounding_box.layer = "W1"
+    abstract_regions = [bounding_box]
+
+    sample = sc.Device(
+        name="sample",
+        layers=ibm_squid_layers(),
+        films=films,
+        abstract_regions=abstract_regions,
+        length_units="um",
+    )
+    return sample
+
+
 def mirror_layers(device, about=0, in_place=False):
     new_layers = []
-    for layer in device.layers_list:
+    for layer in device.layers.values():
         new_layer = layer.copy()
         new_layer.z0 = about - layer.z0
         new_layers.append(new_layer)
@@ -22,96 +169,21 @@ def mirror_layers(device, about=0, in_place=False):
     return device
 
 
-def split_layer(device, layer_name, max_thickness=0.05):
-    """Splits a given layer into multiple thinner layers."""
-    layers = device.layers
-    films = device.films
-    holes = device.holes
-    abstract_regions = device.abstract_regions
-
-    layer_to_split = layers.pop(layer_name)
-    london_lambda = layer_to_split.london_lambda
-    d = layer_to_split.thickness
-
-    num_layers, remainder = divmod(d, max_thickness)
-    num_layers = int(num_layers)
-    new_ds = [max_thickness for _ in range(num_layers)]
-    if abs(remainder) / d > 1e-6:
-        num_layers += 1
-        new_ds.append(remainder)
-    new_layers = {}
-    for i, new_d in enumerate(new_ds):
-        name = f"{layer_name}_{i}"
-        z = i * max_thickness + new_d / 2
-        new_layers[name] = sc.Layer(
-            name, london_lambda=london_lambda, thickness=new_d, z0=z
-        )
-
-    new_films = {}
-    for name, film in films.items():
-        if film.layer == layer_name:
-            for i, new_layer_name in enumerate(new_layers):
-                film_name = f"{name}_{i}"
-                new_film = film.copy()
-                new_film.name = film_name
-                new_film.layer = new_layer_name
-                new_films[film_name] = new_film
-        else:
-            new_films[name] = film
-
-    new_holes = {}
-    for name, hole in holes.items():
-        if hole.layer == layer_name:
-            for i, new_layer_name in enumerate(new_layers):
-                hole_name = f"{name}_{i}"
-                new_hole = hole.copy()
-                new_hole.name = hole_name
-                new_hole.layer = new_layer_name
-                new_holes[film_name] = new_hole
-        else:
-            new_holes[name] = hole
-
-    new_abstract_regions = {}
-    for name, region in abstract_regions.items():
-        if region.layer == layer_name:
-            for i, new_layer_name in enumerate(new_layers):
-                region_name = f"{name}_{i}"
-                new_region = region.copy()
-                new_region.name = region_name
-                new_region.layer = new_layer_name
-                new_abstract_regions[region_name] = new_region
-        else:
-            new_abstract_regions[name] = region
-
-    new_layers.update(layers)
-
-    return sc.Device(
-        device.name,
-        layers=new_layers,
-        films=new_films,
-        holes=new_holes,
-        abstract_regions=new_abstract_regions,
-        length_units=device.length_units,
-    )
-
-
 def flip_device(device, about_axis="y"):
     device = device.copy(with_arrays=False)
     assert about_axis in "xy"
     index = 0 if about_axis == "y" else 1
-    polygons = device.films_list + device.holes_list + device.abstract_regions_list
-    for polygon in polygons:
+    for polygon in device.polygons.values():
         polygon.points[:, index] *= -1
     return device
 
 
 def update_origin(device, x0=0, y0=0):
     device = device.copy(with_arrays=True, copy_arrays=True)
-    polygons = device.films_list + device.holes_list + device.abstract_regions_list
     p0 = np.array([[x0, y0]])
-    for polygon in polygons:
+    for polygon in device.polygons.values():
         polygon.points += p0
-    if hasattr(device, "points"):
+    if getattr(device, "points", None) is not None:
         device.points += p0
     return device
 
@@ -149,15 +221,21 @@ if __name__ == "__main__":
         help="output directory",
     )
     parser.add_argument(
-        "--min-triangles",
+        "--sample-min-triangles",
         type=int,
-        default=8000,
-        help="Minimum number of triangles to use in the two SQUID meshes.",
+        default=12_000,
+        help="Minimum number of triangles to use in the sample mesh.",
+    )
+    parser.add_argument(
+        "--squid-min-triangles",
+        type=int,
+        default=10_000,
+        help="Minimum number of triangles to use in the SQUID mesh.",
     )
     parser.add_argument(
         "--iterations",
         type=int,
-        default=2,
+        default=5,
         help="Number of solver iterations to perform.",
     )
     parser.add_argument(
@@ -175,6 +253,24 @@ if __name__ == "__main__":
         "--y_range",
         type=str,
         help="start, stop for y axis in microns",
+    )
+    parser.add_argument(
+        "-sample-Tc",
+        type=float,
+        default=9.2,
+        help="Sample critical temperature in Kelvin",
+    )
+    parser.add_argument(
+        "--sample-lambda0",
+        type=float,
+        default=0.08,
+        help="Sample T=0 London penetration depth in microns"
+    )
+    parser.add_argument(
+        "--sample-temperature",
+        type=float,
+        default=4.0,
+        help="Sample temperature in Kelvin"
     )
     args = parser.parse_args()
 
@@ -209,87 +305,17 @@ if __name__ == "__main__":
     ys = np.linspace(ystart, ystop, int(np.ceil((ystop - ystart) / pixel_size)))
 
     squid = squids.ibm.medium.make_squid()
-    squid = flip_device(squid, about_axis="x")
+    sample = make_sample()
+    sample = flip_device(sample, about_axis="x")
 
-    films = [
-        sc.Polygon(
-            "xwide1",
-            layer="W1",
-            points=sc.geometry.rotate(
-                sc.geometry.rectangle(15, 41, center=(6, -1)),
-                19,
-            ),
-        ),
-        sc.Polygon(
-            "xwide2",
-            layer="W1",
-            points=np.array(
-                [
-                    [-1, -12],
-                    [-15, -5],
-                    [-20, -3],
-                    [-20, 20],
-                    [-12.5, 20],
-                    [-11, 16],
-                    [-1, -12],
-                ]
-            ),
-        ),
-        # sc.Polygon(
-        #     "wide1",
-        #     layer="BE",
-        #     points=sc.geometry.rotate(
-        #         sc.geometry.rectangle(3, 41, center=(9.5, -1)),
-        #         19,
-        #     )
-        # ),
-        # sc.Polygon(
-        #     "wide2",
-        #     layer="BE",
-        #     points=sc.geometry.rotate(
-        #         sc.geometry.rectangle(3, 41, center=(2.5, -1)),
-        #         19,
-        #     )
-        # ),
-        sc.Polygon(
-            "narrow1",
-            layer="W2",
-            points=sc.geometry.rotate(
-                sc.geometry.rectangle(36, 1.0, center=(-4, 2.75)),
-                -27,
-            ),
-        ),
-        sc.Polygon(
-            "narrow2",
-            layer="W2",
-            points=sc.geometry.rotate(
-                sc.geometry.rectangle(39, 1.0, center=(2, -4.25)),
-                -27,
-            ),
-        ),
-    ]
-
-    abstract_regions = [
-        sc.Polygon(
-            "bounding_box", layer="W1", points=sc.geometry.square(45, 45, center=(0, 1))
-        ),
-    ]
-
-    layers = [l for l in squids.ibm.large.make_squid().layers_list if l.name != "BE"]
-
-    sample = sc.Device(
-        name="sample",
-        layers=layers,
-        films=films,
-        abstract_regions=abstract_regions,
-        length_units="um",
+    sample_lambda = lambda_bcs(
+        args.sample_lambda0, args.sample_temperature, args.sample_Tc
     )
-
     for layer in sample.layers_list:
-        layer.london_lambda = 0.08
+        layer.london_lambda = sample_lambda
 
-    squid.make_mesh(min_triangles=args.min_triangles, optimesh_steps=400)
-    sample.make_mesh(min_triangles=7000, optimesh_steps=400)
+    squid.make_mesh(min_triangles=args.squid_min_triangles)
+    sample.make_mesh(min_triangles=args.sample_min_triangles)
 
     logging.info("Computing bare mutual inductance...")
     circulating_currents = {"fc_center": "1 mA"}
@@ -298,25 +324,26 @@ if __name__ == "__main__":
         device=squid,
         circulating_currents=circulating_currents,
         iterations=iterations,
-        return_solutions=True,
     )[-1]
 
-    flux = fc_solution.polygon_flux()
-    m_no_sample = (flux["pl_hull"] / I_fc).to("Phi_0/A")
-    logging.info(f"\tPhi = {flux['pl_hull'].to('Phi_0'):.3e~P}")
-    logging.info(f"\tM = {m_no_sample:.3f~P}")
+    pl_fluxoid = sum(fc_solution.hole_fluxoid("pl_center", units="Phi_0"))
+    m_no_sample = (pl_fluxoid / I_fc).to("Phi_0/A")
+    logging.info(f"\tPhi = {pl_fluxoid:~.3fP}")
+    logging.info(f"\tM = {m_no_sample:~.3fP}")
 
     sample_x0s = xs
     sample_y0 = ys[int(array_id)]
 
-    flux = []
+    polygon_flux = []
+    flux_part = []
+    supercurrent_part = []
     for i, x0 in enumerate(sample_x0s):
 
         logging.info(
             f"({i + 1} / {len(xs)}) Solving for sample response to field coil..."
         )
-        _sample = mirror_layers(sample, about=-abs(squid_height))
-        _sample = update_origin(_sample, x0=-x0, y0=-sample_y0)
+        _sample = mirror_layers(sample, about=squid_height)
+        _sample = update_origin(_sample, x0=x0, y0=sample_y0)
 
         applied_field = sc.Parameter(
             sample_applied_field,
@@ -342,31 +369,43 @@ if __name__ == "__main__":
         solution = sc.solve(
             device=squid,
             applied_field=applied_field,
+            circulating_currents=None,
             field_units=field_units,
-            return_solutions=True,
             iterations=iterations,
         )[-1]
         logging.info("\tComputing pickup loop flux...")
-        flux.append(solution.polygon_flux(units="Phi_0", with_units=False)["pl_hull"])
-        logging.info(f"({i + 1} / {len(xs)}) flux: {flux}")
+        fluxoid = solution.hole_fluxoid("pl_center", units="Phi_0")
+        flux_part.append(fluxoid.flux_part.magnitude)
+        supercurrent_part.append(fluxoid.supercurrent_part.magnitude)
+        pl_flux = solution.polygon_flux(polygons="pl", units="Phi_0", with_units=False)["pl"]
+        polygon_flux.append(pl_flux)
+        logging.info(
+            f"({i + 1} / {len(xs)}) mutual: "
+            f"{(sum(fluxoid) / I_fc - m_no_sample).to('Phi_0 / A')}"
+        )
+        logging.info(f"({i + 1} / {len(xs)}) flux: {flux_part}")
 
     # Units: Phi_0
-    flux = np.array(flux)
+    flux = np.array(flux_part)
+    supercurrent = np.array(supercurrent_part)
     # Units: Phi_0 / A
-    susc = flux / I_fc.to("A").magnitude - m_no_sample.magnitude
+    mutual = (flux + supercurrent) / I_fc.to("A").magnitude
     data = dict(
         row=int(array_id),
+        I_fc=I_fc.to("A").magnitude,
+        current_units="A",
+        pl_polygon_flux=np.array(polygon_flux),
         flux=flux,
+        supercurrent=supercurrent,
         flux_units="Phi_0",
-        susc=susc,
-        susc_units="Phi_0/A",
+        mutual=mutual,
+        mutual_no_sample=m_no_sample.to("Phi_0 / A").m,
+        mutual_units="Phi_0/A",
         xs=xs,
         ys=ys,
         y=sample_y0,
         length_units="um",
     )
     np.savez(outfile, **data)
-    squid.to_file(outdir)
-    sample.to_file(outdir)
     logging.info(f"Data saved to {outfile}.")
     logging.info("Done.")
