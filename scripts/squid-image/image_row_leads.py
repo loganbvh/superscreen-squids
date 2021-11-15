@@ -73,78 +73,83 @@ def ibm_squid_layers(
 
 
 def make_sample(film_points=101):
+    fc_angle = 45
+
+    fc_shield = sc.Polygon(
+        name="fc_shield",
+        layer="W1",
+        points=sc.geometry.box(16, 80, angle=fc_angle),
+    )
+    fc1 = sc.Polygon(
+        "fc_lead1",
+        layer="BE",
+        points=sc.geometry.box(
+            5.5,
+            80,
+            center=(-(5.5 / 2 + 0.5), 0),
+            angle=fc_angle,
+        ),
+    )
+    fc2 = sc.Polygon(
+        "fc_lead2",
+        layer="BE",
+        points=sc.geometry.box(
+            5.5,
+            80,
+            center=(+(5.5 / 2 + 0.5), 0),
+            angle=fc_angle,
+        ),
+    )
+
+    pl_shield1 = sc.Polygon(
+        "pl_shield1",
+        layer="W2",
+        points=sc.geometry.box(40, 21.22, center=(-20, 0)),
+    ).difference(fc_shield.buffer(2))
+
+    pl_shield2 = sc.Polygon(
+        "pl_shield2",
+        layer="W2",
+        points=sc.geometry.box(40, 21.22, center=(+20, 0)),
+    ).difference(fc_shield.buffer(2))
+
+    pl1 = sc.Polygon(
+        "pl_lead1",
+        layer="W1",
+        points=sc.geometry.box(80, 3, center=(0, -(3 / 2 + 2))),
+    )
+    pl2 = sc.Polygon(
+        "pl_lead2",
+        layer="W1",
+        points=sc.geometry.box(80, 3, center=(0, +(3 / 2 + 2))),
+    )
     films = [
-        sc.Polygon(
-            "xwide1",
-            layer="W1",
-            points=sc.geometry.rotate(
-                sc.geometry.box(15, 41, center=(6, -1)),
-                19,
-            ),
-        ),
-        sc.Polygon(
-            "xwide2",
-            layer="W1",
-            points=np.array(
-                [
-                    [-1, -12],
-                    [-15, -5],
-                    [-20, -3],
-                    [-20, 20],
-                    [-12.5, 20],
-                    [-11, 16],
-                    [-1, -12],
-                ]
-            ),
-        ),
-        sc.Polygon(
-            "wide1",
-            layer="BE",
-            points=sc.geometry.rotate(
-                sc.geometry.box(3, 41, center=(9.5, -1)),
-                19,
-            )
-        ),
-        sc.Polygon(
-            "wide2",
-            layer="BE",
-            points=sc.geometry.rotate(
-                sc.geometry.box(3, 41, center=(2.5, -1)),
-                19,
-            )
-        ),
-        sc.Polygon(
-            "narrow1",
-            layer="W2",
-            points=sc.geometry.rotate(
-                sc.geometry.box(45, 1.0, center=(-2, 2.75)),
-                -27,
-            ),
-        ),
-        sc.Polygon(
-            "narrow2",
-            layer="W2",
-            points=sc.geometry.rotate(
-                sc.geometry.box(45, 1.0, center=(2, -4.25)),
-                -27,
-            ),
-        ),
+        fc_shield,
+        fc1,
+        fc2,
+        pl_shield1,
+        # pl_shield2,
+        pl1,
+        pl2,
     ]
     
     bounding_box = sc.Polygon(
-        "bounding_box", points=sc.geometry.box(24, 24, center=(0, 0))
+        "bounding_box",
+        layer="W1",
+        points=sc.geometry.box(32, 36, center=(0, 0)),
     )
-    
+        
     for film in films:
-        film.points += np.array([[-1, 1]])
+        film.points = sc.geometry.translate(
+            sc.geometry.rotate(film.points, -28),
+            7.5, -5
+        )
     
     films = [
         f.resample(film_points).intersection(bounding_box)
         for f in films
     ]
     
-
-    bounding_box.layer = "W1"
     abstract_regions = [bounding_box]
 
     sample = sc.Device(
