@@ -277,7 +277,6 @@ if __name__ == "__main__":
     field_units = "mT"
     outdir = args.outdir
     squid_height = args.squid_height
-    min_triangles = args.min_triangles
     x_range = args.x_range
     y_range = args.y_range
     iterations = args.iterations
