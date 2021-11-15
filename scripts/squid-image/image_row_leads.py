@@ -136,13 +136,13 @@ def make_sample(film_points=101):
     bounding_box = sc.Polygon(
         "bounding_box",
         layer="W1",
-        points=sc.geometry.box(32, 36, center=(0, 0)),
+        points=sc.geometry.box(28, 32, center=(0, 0)),
     )
         
     for film in films:
         film.points = sc.geometry.translate(
-            sc.geometry.rotate(film.points, -28),
-            7.5, -5
+            sc.geometry.rotate(film.points, -27),
+            7.5, -4.5
         )
     
     films = [
