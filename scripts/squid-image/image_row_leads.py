@@ -104,13 +104,13 @@ def make_sample(film_points=101):
     pl_shield1 = sc.Polygon(
         "pl_shield1",
         layer="W2",
-        points=sc.geometry.box(40, 21.22, center=(-20, 0)),
+        points=sc.geometry.box(40, 21.213, center=(-20, 0)),
     ).difference(fc_shield.buffer(2))
 
     pl_shield2 = sc.Polygon(
         "pl_shield2",
         layer="W2",
-        points=sc.geometry.box(40, 21.22, center=(+20, 0)),
+        points=sc.geometry.box(40, 21.213, center=(+20, 0)),
     ).difference(fc_shield.buffer(2))
 
     pl1 = sc.Polygon(
@@ -138,7 +138,7 @@ def make_sample(film_points=101):
         layer="W1",
         points=sc.geometry.box(28, 32, center=(0, 0)),
     )
-        
+
     for film in films:
         film.points = sc.geometry.translate(
             sc.geometry.rotate(film.points, -27),
