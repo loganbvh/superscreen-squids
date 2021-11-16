@@ -20,7 +20,7 @@ def lambda_bcs(lambda0: float, T: float, Tc: float) -> float:
 def make_sample(
     film_points=101,
     align_layers="middle",
-    insulator_thickness_multiplier=2.0,
+    insulator_thickness_multiplier=1.0,
 ):
     fc_angle = 45
 
@@ -108,6 +108,7 @@ def make_sample(
         films=films,
         abstract_regions=[bounding_box],
         length_units="um",
+        solve_dtype="float32",
     )
     return sample
 
@@ -178,7 +179,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--sample-min-triangles",
         type=int,
-        default=13_000,
+        default=20_000,
         help="Minimum number of triangles to use in the sample mesh.",
     )
     parser.add_argument(
