@@ -9,6 +9,7 @@ import superscreen as sc
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 import squids
+from squids.ibm.layers import ibm_squid_layers
 
 
 def lambda_bcs(lambda0: float, T: float, Tc: float) -> float:
@@ -16,63 +17,11 @@ def lambda_bcs(lambda0: float, T: float, Tc: float) -> float:
     return lambda0 / np.sqrt(1 - t ** 4) 
 
 
-def ibm_squid_layers(
-    align: str = "bottom",
-    london_lambda: float = 0.08,
-    z0: float = 0.0,
-) -> List[sc.Layer]:
-    """Return a list of superscreen.Layers representing the superconducting layers
-    in IBM SQUID susceptometers.
-
-    See https://arxiv.org/pdf/1605.09483.pdf, Figure 8.
-
-    Args:
-        align: Whether to position the 2D model layer at the top, middle, or bottom
-            of the phyical 3D metal layer.
-        london_lambda: The London penetration depth for the superconducting films,
-            in microns.
-        z0: The vertical position of the bottom of W2, i.e. the surface of the
-            SQUID chip.
-
-    Returns:
-        A list a Layer objects representing the SQUID wiring layers.
-    
-    """
-    assert align in ["top", "middle", "bottom"]
-
-    # Layer thicknesses in microns.
-    d_W2 = 0.20
-    d_I2 = 0.13
-    d_W1 = 0.10
-    d_I1 = 0.15
-    d_BE = 0.16
-    
-    # Add more room between layers
-    d_I2 *= 2
-    d_I1 *= 2
-
-    # Metal layer vertical positions in microns.
-    if align == "bottom":
-        z0_W2 = z0
-        z0_W1 = z0 + d_W2 + d_I2
-        z0_BE = z0 + d_W2 + d_I2 + d_W1 + d_I1
-    elif align == "middle":
-        z0_W2 = z0 + d_W2 / 2
-        z0_W1 = z0 + d_W2 / 2 + d_I2 + d_W1 / 2
-        z0_BE = z0 + d_W2 / 2 + d_I2 + d_W1 / 2 + d_I1 + d_BE / 2
-    else:
-        z0_W2 = z0 + d_W2
-        z0_W1 = z0 + d_W2 + d_I2 + d_W1
-        z0_BE = z0 + d_W2 + d_I2 + d_W1 + d_I1 + d_BE
-
-    return [
-        sc.Layer("W2", london_lambda=london_lambda, thickness=d_W2, z0=z0_W2),
-        sc.Layer("W1", london_lambda=london_lambda, thickness=d_W1, z0=z0_W1),
-        sc.Layer("BE", london_lambda=london_lambda, thickness=d_BE, z0=z0_BE),
-    ]
-
-
-def make_sample(film_points=101):
+def make_sample(
+    film_points=101,
+    align_layers="middle",
+    insulator_thickness_multiplier=2.0,
+):
     fc_angle = 45
 
     fc_shield = sc.Polygon(
@@ -101,36 +50,36 @@ def make_sample(film_points=101):
         ),
     )
 
-    pl_shield1 = sc.Polygon(
-        "pl_shield1",
-        layer="W2",
+    mod_shield1 = sc.Polygon(
+        "mod_coil_shield1",
+        layer="W1",
         points=sc.geometry.box(40, 21.213, center=(-20, 0)),
     ).difference(fc_shield.buffer(2))
 
-    pl_shield2 = sc.Polygon(
-        "pl_shield2",
-        layer="W2",
+    mod_shield2 = sc.Polygon(
+        "mod_coil_shield2",
+        layer="W1",
         points=sc.geometry.box(40, 21.213, center=(+20, 0)),
     ).difference(fc_shield.buffer(2))
 
-    pl1 = sc.Polygon(
-        "pl_lead1",
-        layer="W1",
+    mod1 = sc.Polygon(
+        "mod_coil_lead1",
+        layer="W2",
         points=sc.geometry.box(80, 3, center=(0, -(3 / 2 + 2))),
     )
-    pl2 = sc.Polygon(
-        "pl_lead2",
-        layer="W1",
+    mod2 = sc.Polygon(
+        "mod_coil_lead2",
+        layer="W2",
         points=sc.geometry.box(80, 3, center=(0, +(3 / 2 + 2))),
     )
     films = [
         fc_shield,
         fc1,
         fc2,
-        pl_shield1,
-        # pl_shield2,
-        pl1,
-        pl2,
+        mod_shield1,
+        # mod_shield2,
+        mod1,
+        mod2,
     ]
     
     bounding_box = sc.Polygon(
@@ -149,14 +98,15 @@ def make_sample(film_points=101):
         f.resample(film_points).intersection(bounding_box)
         for f in films
     ]
-    
-    abstract_regions = [bounding_box]
 
     sample = sc.Device(
         name="sample",
-        layers=ibm_squid_layers(),
+        layers=ibm_squid_layers(
+            align=align_layers,
+            insulator_thickness_multiplier=insulator_thickness_multiplier,
+        ),
         films=films,
-        abstract_regions=abstract_regions,
+        abstract_regions=[bounding_box],
         length_units="um",
     )
     return sample
@@ -228,7 +178,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--sample-min-triangles",
         type=int,
-        default=12_000,
+        default=13_000,
         help="Minimum number of triangles to use in the sample mesh.",
     )
     parser.add_argument(
@@ -318,8 +268,8 @@ if __name__ == "__main__":
     for layer in sample.layers_list:
         layer.london_lambda = sample_lambda
 
-    squid.make_mesh(min_triangles=args.squid_min_triangles)
-    sample.make_mesh(min_triangles=args.sample_min_triangles)
+    squid.make_mesh(min_triangles=args.squid_min_triangles, optimesh_steps=20)
+    sample.make_mesh(min_triangles=args.sample_min_triangles, optimesh_steps=20)
 
     logging.info("Computing bare mutual inductance...")
     circulating_currents = {"fc_center": "1 mA"}
