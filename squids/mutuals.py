@@ -43,13 +43,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--iterations",
         type=int,
-        default=5,
+        default=10,
         help="Number of solver iterations.",
     )
     parser.add_argument(
         "--optimesh-steps",
         type=int,
-        default=None,
+        default=40,
         help="Number of optimesh steps to perform."
     )
     parser.add_argument(
@@ -60,15 +60,16 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    squid_funcs = [
-        ibm.small.make_squid,
-        ibm.medium.make_squid,
-        ibm.large.make_squid,
-        huber.make_squid,
-    ]
+    squid_funcs = {
+        "ibm-small": ibm.small.make_squid,
+        "ibm-medium": ibm.medium.make_squid,
+        "ibm-large": ibm.medium.make_squid,
+        "ibm-xlarge": ibm.xlarge.make_squid,
+        "huber": huber.make_squid,
+    }
 
     mutuals = {}
-    for make_squid in squid_funcs:
+    for make_squid in squid_funcs.values():
         M = get_mutual(
             make_squid,
             args.min_triangles,
