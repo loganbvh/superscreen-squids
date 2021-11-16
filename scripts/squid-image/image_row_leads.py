@@ -312,6 +312,7 @@ if __name__ == "__main__":
             field_units=field_units,
             iterations=iterations,
             return_solutions=True,
+            check_inversion=False,
         )[-1]
 
         logging.info("\tSolving for squid response to sample...")
