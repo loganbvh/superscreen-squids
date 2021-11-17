@@ -19,7 +19,7 @@ def lambda_bcs(lambda0: float, T: float, Tc: float) -> float:
 
 def make_sample(
     film_points=101,
-    align_layers="middle",
+    align_layers="bottom",
     insulator_thickness_multiplier=1.0,
 ):
     fc_angle = 45
@@ -259,7 +259,7 @@ if __name__ == "__main__":
     xs = np.linspace(xstart, xstop, int(np.ceil((xstop - xstart) / pixel_size)))
     ys = np.linspace(ystart, ystop, int(np.ceil((ystop - ystart) / pixel_size)))
 
-    squid = squids.ibm.medium.make_squid()
+    squid = squids.ibm.medium.make_squid(align_layers="bottom")
     sample = make_sample()
     sample = flip_device(sample, about_axis="x")
 
