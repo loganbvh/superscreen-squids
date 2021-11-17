@@ -179,7 +179,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--sample-min-triangles",
         type=int,
-        default=20_000,
+        default=18_000,
         help="Minimum number of triangles to use in the sample mesh.",
     )
     parser.add_argument(
@@ -225,7 +225,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--sample-temperature",
         type=float,
-        default=4.0,
+        default=9.0,
         help="Sample temperature in Kelvin"
     )
     args = parser.parse_args()
