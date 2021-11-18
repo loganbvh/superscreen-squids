@@ -7,7 +7,11 @@ def ibm_squid_layers(
     align: str = "bottom",
     london_lambda: float = 0.08,
     z0: float = 0.0,
-    insulator_thickness_multiplier: float = 1.0
+    d_BE: float = 0.16,
+    d_I1: float = 0.15,
+    d_W1: float = 0.10,
+    d_I2: float = 0.13,
+    d_W2: float = 0.20,
 ) -> List[Layer]:
     """Return a list of superscreen.Layers representing the superconducting layers
     in IBM SQUID susceptometers.
@@ -21,21 +25,13 @@ def ibm_squid_layers(
             in microns.
         z0: The vertical position of the bottom of W2, i.e. the surface of the
             SQUID chip.
-        insulator_thickess_multiplier: Scale the insulator layer thicknesses by
-            this amount (might be necessary for large SQUIDs to converge).
+        d_BE, d_I1, d_W1, d_I2, d_W2: Layer thicknesses in microns.
 
     Returns:
         A list a Layer objects representing the SQUID wiring layers.
 
     """
-    assert align in ["top", "middle", "bottom"]
-
-    # Layer thicknesses in microns.
-    d_W2 = 0.20
-    d_I2 = 0.13 * insulator_thickness_multiplier
-    d_W1 = 0.10
-    d_I1 = 0.15 * insulator_thickness_multiplier
-    d_BE = 0.16
+    assert align in ("top", "middle", "bottom")
 
     # Metal layer vertical positions in microns.
     if align == "bottom":

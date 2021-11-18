@@ -9,14 +9,11 @@ from . import ibm
 
 
 def get_mutual(
-    make_squid,
-    min_triangles,
+    squid,
+    label,
     iterations,
-    optimesh_steps=None,
     fc_lambda=None
 ):
-    squid = make_squid()
-    squid.make_mesh(min_triangles=min_triangles, optimesh_steps=optimesh_steps)
     if fc_lambda is not None:
         squid.layers["BE"].london_lambda = fc_lambda
     print(squid)
@@ -25,7 +22,7 @@ def get_mutual(
     for name, poly in fluxoid_polys.items():
         ax.plot(*sc.geometry.close_curve(poly).T, label=name + "_fluxoid")
     ax.legend(bbox_to_anchor=(1, 1))
-    ax.set_title(make_squid.__module__)
+    ax.set_title(label)
     return squid.mutual_inductance_matrix(iterations=iterations, units="Phi_0 / A")
 
 
@@ -39,6 +36,12 @@ if __name__ == "__main__":
         type=int,
         default=10_000,
         help="Minimum number of triangles in the mesh.",
+    )
+    parser.add_argument(
+        "--solve-dtype",
+        type=str,
+        help="Device solve_dtype.",
+        default="float64",
     )
     parser.add_argument(
         "--iterations",
@@ -63,18 +66,23 @@ if __name__ == "__main__":
     squid_funcs = {
         "ibm-small": ibm.small.make_squid,
         "ibm-medium": ibm.medium.make_squid,
-        "ibm-large": ibm.medium.make_squid,
+        "ibm-large": ibm.large.make_squid,
         "ibm-xlarge": ibm.xlarge.make_squid,
         "huber": huber.make_squid,
     }
 
     mutuals = {}
     for make_squid in squid_funcs.values():
-        M = get_mutual(
-            make_squid,
-            args.min_triangles,
-            args.iterations,
+        squid = make_squid()
+        squid.make_mesh(
+            min_triangles=args.min_triangles,
             optimesh_steps=args.optimesh_steps,
+        )
+        squid.solve_dtype = args.solve_dtype
+        M = get_mutual(
+            squid,
+            make_squid.__module__,
+            args.iterations,
             fc_lambda=args.fc_lambda,
         )
         mutuals[make_squid.__module__] = M

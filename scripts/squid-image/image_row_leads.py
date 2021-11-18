@@ -20,7 +20,6 @@ def lambda_bcs(lambda0: float, T: float, Tc: float) -> float:
 def make_sample(
     film_points=101,
     align_layers="bottom",
-    insulator_thickness_multiplier=1.0,
 ):
     fc_angle = 45
 
@@ -85,13 +84,13 @@ def make_sample(
     bounding_box = sc.Polygon(
         "bounding_box",
         layer="W1",
-        points=sc.geometry.box(28, 32, center=(0, 0)),
+        points=sc.geometry.box(20, 20, points_per_side=5, center=(0, 0)),
     )
 
     for film in films:
         film.points = sc.geometry.translate(
             sc.geometry.rotate(film.points, -27),
-            7.5, -4.5
+            7.5 - 1, -4.5 + 3
         )
     
     films = [
@@ -103,12 +102,12 @@ def make_sample(
         name="sample",
         layers=ibm_squid_layers(
             align=align_layers,
-            insulator_thickness_multiplier=insulator_thickness_multiplier,
+            d_I1=0.5,
+            d_I2=0.5,
         ),
         films=films,
         abstract_regions=[bounding_box],
         length_units="um",
-        solve_dtype="float32",
     )
     return sample
 
@@ -179,7 +178,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--sample-min-triangles",
         type=int,
-        default=18_000,
+        default=10_000,
         help="Minimum number of triangles to use in the sample mesh.",
     )
     parser.add_argument(
@@ -191,7 +190,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--iterations",
         type=int,
-        default=5,
+        default=6,
         help="Number of solver iterations to perform.",
     )
     parser.add_argument(
@@ -225,7 +224,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--sample-temperature",
         type=float,
-        default=9.0,
+        default=8.0,
         help="Sample temperature in Kelvin"
     )
     args = parser.parse_args()
@@ -269,8 +268,13 @@ if __name__ == "__main__":
     for layer in sample.layers_list:
         layer.london_lambda = sample_lambda
 
+    sample = mirror_layers(sample, about=squid_height)
+
     squid.make_mesh(min_triangles=args.squid_min_triangles, optimesh_steps=20)
     sample.make_mesh(min_triangles=args.sample_min_triangles, optimesh_steps=20)
+
+    print(squid)
+    print(sample)
 
     logging.info("Computing bare mutual inductance...")
     circulating_currents = {"fc_center": "1 mA"}
@@ -297,8 +301,8 @@ if __name__ == "__main__":
         logging.info(
             f"({i + 1} / {len(xs)}) Solving for sample response to field coil..."
         )
-        _sample = mirror_layers(sample, about=squid_height)
-        _sample = update_origin(_sample, x0=x0, y0=sample_y0)
+
+        _sample = update_origin(sample, x0=x0, y0=sample_y0)
 
         applied_field = sc.Parameter(
             sample_applied_field,

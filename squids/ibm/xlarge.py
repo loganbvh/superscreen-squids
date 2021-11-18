@@ -8,10 +8,11 @@ from .layers import ibm_squid_layers
 
 
 def make_squid(
-    interp_points=321,
-    align_layers="middle",
-    insulator_thickness_multiplier=2.0,
-):
+    interp_points: int = 301,
+    align_layers: str = "middle",
+    d_I1: float = 0.3,
+    d_I2: float = 0.3,
+) -> sc.Device:
     pl_length = 11.5
     ri_pl = 3.0
     ro_pl = 3.5
@@ -107,6 +108,14 @@ def make_squid(
 
     films = [fc_shield, fc, pl_shield1, pl_shield2, pl]
     holes = [fc_center, pl_center]
+    abstract_regions = [
+        bbox,
+        sc.Polygon(
+            "circle",
+            layer="W1",
+            points=sc.geometry.circle(ri_pl / 2, points=interp_points // 5),
+        ),
+    ]
     for polygon in films + holes:
         if "shield" in polygon.name:
             polygon.points = polygon.resample(81)
@@ -117,10 +126,11 @@ def make_squid(
         "ibm_3000nm",
         layers=ibm_squid_layers(
             align=align_layers,
-            insulator_thickness_multiplier=insulator_thickness_multiplier,
+            d_I1=d_I1,
+            d_I2=d_I2,
         ),
         films=films,
         holes=holes,
-        abstract_regions=[bbox],
+        abstract_regions=abstract_regions,
         length_units="um",
     )
