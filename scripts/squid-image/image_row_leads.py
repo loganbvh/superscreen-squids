@@ -259,7 +259,7 @@ if __name__ == "__main__":
     ys = np.linspace(ystart, ystop, int(np.ceil((ystop - ystart) / pixel_size)))
 
     squid = squids.ibm.medium.make_squid(align_layers="bottom")
-    sample = make_sample()
+    sample = make_sample(align_layers="bottom")
     sample = flip_device(sample, about_axis="x")
 
     sample_lambda = lambda_bcs(
