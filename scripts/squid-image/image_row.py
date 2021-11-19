@@ -216,13 +216,16 @@ if __name__ == "__main__":
     xs = np.linspace(xstart, xstop, int(np.ceil((xstop - xstart) / pixel_size)))
     ys = np.linspace(ystart, ystop, int(np.ceil((ystop - ystart) / pixel_size)))
 
-    squid = squids.ibm.medium.make_squid()
-    sample = squids.ibm.large.make_squid()
+    squid = squids.ibm.medium.make_squid(align_layers="bottom")
+    sample = squids.ibm.large.make_squid(align_layers="bottom")
     # films = [film for film in sample.films_list if film.name != "pl_shield2"]
     # sample.films_list = films
 
     sample = flip_device(sample, about_axis="y")
     sample = flip_device(sample, about_axis="x")
+
+    print(squid)
+    print(sample)
 
     squid.make_mesh(min_triangles=args.min_triangles, optimesh_steps=optimesh_steps)
     sample.make_mesh(min_triangles=args.min_triangles, optimesh_steps=optimesh_steps)
@@ -244,6 +247,7 @@ if __name__ == "__main__":
     sample_x0s = xs
     sample_y0 = ys[int(array_id)]
 
+    pl_total_flux = []
     flux_part = []
     supercurrent_part = []
     for i, x0 in enumerate(sample_x0s):
@@ -283,6 +287,8 @@ if __name__ == "__main__":
             iterations=iterations,
         )[-1]
         logging.info("\tComputing pickup loop flux...")
+        pl_flux = solution.polygon_flux(polygons="pl", units="Phi_0", with_units=False)["pl"]
+        pl_total_flux.append(pl_flux)
         fluxoid = solution.hole_fluxoid("pl_center", units="Phi_0")
         flux_part.append(fluxoid.flux_part.magnitude)
         supercurrent_part.append(fluxoid.supercurrent_part.magnitude)
@@ -291,9 +297,11 @@ if __name__ == "__main__":
             f"{(sum(fluxoid) / I_fc - m_no_sample).to('Phi_0 / A')}"
         )
         logging.info(f"({i + 1} / {len(xs)}) flux: {flux_part}")
+        logging.info(f"({i + 1} / {len(xs)}) pl_total_flux: {pl_total_flux}")
 
 
     # Units: Phi_0
+    pl_total_flux = np.array(pl_total_flux)
     flux = np.array(flux_part)
     supercurrent = np.array(supercurrent_part)
     # Units: Phi_0 / A
@@ -302,6 +310,7 @@ if __name__ == "__main__":
         row=int(array_id),
         I_fc=I_fc.to("A").magnitude,
         current_units="A",
+        pl_total_flux=pl_total_flux,
         flux=flux,
         supercurrent=supercurrent,
         flux_units="Phi_0",
