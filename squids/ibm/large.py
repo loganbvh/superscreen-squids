@@ -100,14 +100,14 @@ def make_squid(interp_points=201, align_layers="middle"):
     bbox = sc.Polygon(
         "bounding_box",
         layer="BE",
-        points=sc.geometry.box(11.5, 11.5, center=(1.25, -1.75)),
+        points=sc.geometry.box(10.5, 11, center=(1.35, -1.75)),
     )
 
     films = [fc_shield, fc, pl_shield1, pl_shield2, pl]
     holes = [fc_center, pl_center]
     for polygon in films + holes:
         if "shield" in polygon.name:
-            polygon.points = polygon.resample(81)
+            polygon.points = polygon.resample(interp_points // 2)
         else:
             polygon.points = polygon.resample(interp_points)
 

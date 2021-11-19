@@ -16,21 +16,22 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    fig, axes = plt.subplots(
-        1,
-        4,
-        figsize=(12, 3),
-        sharex=args.same_scale,
-        sharey=args.same_scale,
-        constrained_layout=True,
-    )
-
     squid_funcs = [
         ibm.small.make_squid,
         ibm.medium.make_squid,
         ibm.large.make_squid,
+        ibm.xlarge.make_squid,
         huber.make_squid,
     ]
+
+    fig, axes = plt.subplots(
+        1,
+        len(squid_funcs),
+        figsize=(len(squid_funcs) * 3, 3),
+        sharex=args.same_scale,
+        sharey=args.same_scale,
+        constrained_layout=True,
+    )
 
     for ax, make_squid in zip(axes, squid_funcs):
         squid = make_squid()

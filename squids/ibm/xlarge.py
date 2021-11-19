@@ -118,7 +118,7 @@ def make_squid(
     ]
     for polygon in films + holes:
         if "shield" in polygon.name:
-            polygon.points = polygon.resample(81)
+            polygon.points = polygon.resample(interp_points // 2)
         else:
             polygon.points = polygon.resample(interp_points)
 

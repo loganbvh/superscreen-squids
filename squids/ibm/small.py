@@ -7,7 +7,7 @@ import superscreen as sc
 from .layers import ibm_squid_layers
 
 
-def make_squid(interp_points=101, align_layers="middle"):
+def make_squid(interp_points=81, align_layers="middle"):
     pl_length = 2.5
     ri_pl = 0.1
     ro_pl = 0.3
@@ -125,7 +125,10 @@ def make_squid(interp_points=101, align_layers="middle"):
     films = [fc_shield, fc, pl_shield1, pl_shield2, pl]
     holes = [fc_center, pl_center]
     for polygon in films + holes:
-        polygon.points = polygon.resample(interp_points)
+        if "shield" in polygon.name:
+            polygon.points = polygon.resample(interp_points // 2)
+        else:
+            polygon.points = polygon.resample(interp_points)
 
     return sc.Device(
         "ibm_100nm",
