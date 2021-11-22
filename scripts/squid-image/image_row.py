@@ -220,7 +220,7 @@ if __name__ == "__main__":
     sample = squids.ibm.large.make_squid(align_layers="bottom")
     # films = [film for film in sample.films_list if film.name != "pl_shield2"]
     # sample.films_list = films
-
+    squid = flip_device(about_axis="x")
     sample = flip_device(sample, about_axis="y")
     sample = flip_device(sample, about_axis="x")
 
