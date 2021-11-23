@@ -221,11 +221,11 @@ if __name__ == "__main__":
     # films = [film for film in sample.films_list if film.name != "pl_shield2"]
     # sample.films_list = films
     squid = flip_device(squid, about_axis="x")
-    sample = flip_device(sample, about_axis="y")
+    # sample = flip_device(sample, about_axis="y")
     sample = flip_device(sample, about_axis="x")
 
-    print(squid)
-    print(sample)
+    logging.info(squid)
+    logging.info(sample)
 
     squid.make_mesh(min_triangles=args.min_triangles, optimesh_steps=optimesh_steps)
     sample.make_mesh(min_triangles=args.min_triangles, optimesh_steps=optimesh_steps)
