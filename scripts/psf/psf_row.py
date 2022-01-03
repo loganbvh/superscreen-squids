@@ -105,7 +105,7 @@ def main():
         job_id = os.environ["SLURM_ARRAY_JOB_ID"]
         array_id = os.environ["SLURM_ARRAY_TASK_ID"]
         num_rows = int(os.environ["SLURM_ARRAY_TASK_COUNT"])
-        pixel_size = (ystart - ystop) / num_rows
+        pixel_size = abs(ystop - ystart) / num_rows
     else:
         job_id = time.strfime("%y%m%d_%H%M%S")
         array_id = 0
