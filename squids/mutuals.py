@@ -32,10 +32,10 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--min-triangles",
+        "--min-points",
         type=int,
-        default=10_000,
-        help="Minimum number of triangles in the mesh.",
+        default=6_000,
+        help="Minimum number of vertices in the mesh.",
     )
     parser.add_argument(
         "--solve-dtype",
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     for make_squid in squid_funcs.values():
         squid = make_squid()
         squid.make_mesh(
-            min_triangles=args.min_triangles,
+            min_points=args.min_points,
             optimesh_steps=args.optimesh_steps,
         )
         squid.solve_dtype = args.solve_dtype

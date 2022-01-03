@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import logging
 
 import numpy as np
@@ -20,79 +21,6 @@ def mirror_layers(device, about=0, in_place=False):
         device = device.copy()
     device.layers_list = new_layers
     return device
-
-
-# def split_layer(device, layer_name, max_thickness=0.05):
-#     """Splits a given layer into multiple thinner layers."""
-#     layers = device.layers
-#     films = device.films
-#     holes = device.holes
-#     abstract_regions = device.abstract_regions
-
-#     layer_to_split = layers.pop(layer_name)
-#     london_lambda = layer_to_split.london_lambda
-#     d = layer_to_split.thickness
-
-#     num_layers, remainder = divmod(d, max_thickness)
-#     num_layers = int(num_layers)
-#     new_ds = [max_thickness for _ in range(num_layers)]
-#     if abs(remainder) / d > 1e-6:
-#         num_layers += 1
-#         new_ds.append(remainder)
-#     new_layers = {}
-#     for i, new_d in enumerate(new_ds):
-#         name = f"{layer_name}_{i}"
-#         z = i * max_thickness + new_d / 2
-#         new_layers[name] = sc.Layer(
-#             name, london_lambda=london_lambda, thickness=new_d, z0=z
-#         )
-
-#     new_films = {}
-#     for name, film in films.items():
-#         if film.layer == layer_name:
-#             for i, new_layer_name in enumerate(new_layers):
-#                 film_name = f"{name}_{i}"
-#                 new_film = film.copy()
-#                 new_film.name = film_name
-#                 new_film.layer = new_layer_name
-#                 new_films[film_name] = new_film
-#         else:
-#             new_films[name] = film
-
-#     new_holes = {}
-#     for name, hole in holes.items():
-#         if hole.layer == layer_name:
-#             for i, new_layer_name in enumerate(new_layers):
-#                 hole_name = f"{name}_{i}"
-#                 new_hole = hole.copy()
-#                 new_hole.name = hole_name
-#                 new_hole.layer = new_layer_name
-#                 new_holes[hole_name] = new_hole
-#         else:
-#             new_holes[name] = hole
-
-#     new_abstract_regions = {}
-#     for name, region in abstract_regions.items():
-#         if region.layer == layer_name:
-#             for i, new_layer_name in enumerate(new_layers):
-#                 region_name = f"{name}_{i}"
-#                 new_region = region.copy()
-#                 new_region.name = region_name
-#                 new_region.layer = new_layer_name
-#                 new_abstract_regions[region_name] = new_region
-#         else:
-#             new_abstract_regions[name] = region
-
-#     new_layers.update(layers)
-
-#     return sc.Device(
-#         device.name,
-#         layers=new_layers,
-#         films=new_films,
-#         holes=new_holes,
-#         abstract_regions=new_abstract_regions,
-#         length_units=device.length_units,
-#     )
 
 
 def flip_device(device, about_axis="y"):
@@ -139,8 +67,7 @@ def squid_applied_field(x, y, z, sample_solution=None, field_units="mT"):
     return f
 
 
-if __name__ == "__main__":
-
+def main():
     import argparse
 
     parser = argparse.ArgumentParser()
@@ -174,14 +101,20 @@ if __name__ == "__main__":
         help="Relative distance between the two SQUIDs",
     )
     parser.add_argument(
-        "--x_range",
+        "--x-range",
         type=str,
         help="start, stop for x axis in microns",
     )
     parser.add_argument(
-        "--y_range",
+        "--y-range",
         type=str,
         help="start, stop for y axis in microns",
+    )
+    parser.add_argument(
+        "--num-rows",
+        type=int,
+        default=1,
+        help="Number of rows in the image (ignored if run via a slurm job array).",
     )
     args = parser.parse_args()
 
@@ -194,9 +127,14 @@ if __name__ == "__main__":
     iterations = args.iterations
     optimesh_steps = args.optimesh_steps
 
-    job_id = os.environ["SLURM_ARRAY_JOB_ID"]
-    array_id = os.environ["SLURM_ARRAY_TASK_ID"]
-    num_tasks = float(os.environ["SLURM_ARRAY_TASK_COUNT"])
+    if "SLURM_ARRAY_JOB_ID" in os.environ:
+        job_id = os.environ["SLURM_ARRAY_JOB_ID"]
+        array_id = os.environ["SLURM_ARRAY_TASK_ID"]
+        num_rows = int(os.environ["SLURM_ARRAY_TASK_COUNT"])
+    else:
+        job_id = time.strfime("%y%m%d_%H%M%S")
+        array_id = 0
+        num_rows = args.num_rows
 
     outfile = os.path.join(outdir, f"{job_id}_{array_id}_image_squid.npz")
 
@@ -211,15 +149,14 @@ if __name__ == "__main__":
 
     xstart, xstop = x_range
     ystart, ystop = y_range
-    pixel_size = (ystop - ystart) / num_tasks
+    pixel_size = (ystop - ystart) / num_rows
 
     xs = np.linspace(xstart, xstop, int(np.ceil((xstop - xstart) / pixel_size)))
     ys = np.linspace(ystart, ystop, int(np.ceil((ystop - ystart) / pixel_size)))
 
     squid = squids.ibm.medium.make_squid(align_layers="bottom")
     sample = squids.ibm.large.make_squid(align_layers="bottom")
-    # films = [film for film in sample.films_list if film.name != "pl_shield2"]
-    # sample.films_list = films
+
     squid = flip_device(squid, about_axis="x")
     # sample = flip_device(sample, about_axis="y")
     sample = flip_device(sample, about_axis="x")
@@ -227,8 +164,8 @@ if __name__ == "__main__":
     logging.info(squid)
     logging.info(sample)
 
-    squid.make_mesh(min_triangles=args.min_triangles, optimesh_steps=optimesh_steps)
-    sample.make_mesh(min_triangles=args.min_triangles, optimesh_steps=optimesh_steps)
+    squid.make_mesh(min_triangles=min_triangles, optimesh_steps=optimesh_steps)
+    sample.make_mesh(min_triangles=min_triangles, optimesh_steps=optimesh_steps)
 
     logging.info("Computing bare mutual inductance...")
     circulating_currents = {"fc_center": "1 mA"}
@@ -325,3 +262,7 @@ if __name__ == "__main__":
     np.savez(outfile, **data)
     logging.info(f"Data saved to {outfile}.")
     logging.info("Done.")
+
+
+if __name__ == "__main__":
+    main()

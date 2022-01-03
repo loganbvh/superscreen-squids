@@ -4,7 +4,7 @@ from superscreen import Layer
 
 
 def ibm_squid_layers(
-    align: str = "bottom",
+    align: str = "middle",
     london_lambda: float = 0.08,
     z0: float = 0.0,
     d_BE: float = 0.16,
