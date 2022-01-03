@@ -1,11 +1,11 @@
 #!/bin/bash
 
 #SBATCH --job-name=squid_image
-#SBATCH --array=0-95
+#SBATCH --array=0-80
 #SBATCH --output=slurm-%A_%a.out
-#SBATCH --time=08:00:00
+#SBATCH --time=12:00:00
 #SBATCH --ntasks=1
-#SBATCH --mem=6G
+#SBATCH --mem=8G
 
 echo "slurm script:"
 echo "$(<$0)"
@@ -22,10 +22,11 @@ mkdir -p $outdir/logs
 
 python image_row.py \
     --outdir=$outdir \
-    --squid-height=0.05 \
-    --min-triangles=8000 \
-    --x_range="-7, 5" \
-    --y_range="-7, 5" \
+    --squid-height=-0.035 \
+    --min-triangles=13000 \
+    --optimesh-steps=50 \
+    --x_range="-4, 4" \
+    --y_range="-5, 5" \
     --iterations=5
 
 mv "slurm-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.out" $outdir/logs/
