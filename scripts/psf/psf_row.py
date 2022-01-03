@@ -59,18 +59,18 @@ def main():
         help="SQUID height in microns",
     )
     parser.add_argument(
-        "--align_layers",
+        "--align-layers",
         type=str,
         default="middle",
         choices=("bottom", "middle", "top"),
     )
     parser.add_argument(
-        "--x_range",
+        "--x-range",
         type=str,
         help="start, stop for x axis in microns",
     )
     parser.add_argument(
-        "--y_range",
+        "--y-range",
         type=str,
         help="start, stop for y axis in microns",
     )
