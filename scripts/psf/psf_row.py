@@ -91,10 +91,21 @@ def main():
     pixel_size = args.pixel_size
     align_layers = args.align_layers
 
+    x_range = [
+        float(x.strip()) for x in x_range.replace("(", "").replace(")", "").split(",")
+    ]
+    y_range = [
+        float(y.strip()) for y in y_range.replace("(", "").replace(")", "").split(",")
+    ]
+
+    xstart, xstop = x_range
+    ystart, ystop = y_range
+
     if "SLURM_ARRAY_JOB_ID" in os.environ:
         job_id = os.environ["SLURM_ARRAY_JOB_ID"]
         array_id = os.environ["SLURM_ARRAY_TASK_ID"]
         num_rows = int(os.environ["SLURM_ARRAY_TASK_COUNT"])
+        pixel_size = (ystart - ystop) / num_rows
     else:
         job_id = time.strfime("%y%m%d_%H%M%S")
         array_id = 0
@@ -106,16 +117,6 @@ def main():
     )
 
     logging.basicConfig(level=logging.INFO)
-
-    x_range = [
-        float(x.strip()) for x in x_range.replace("(", "").replace(")", "").split(",")
-    ]
-    y_range = [
-        float(y.strip()) for y in y_range.replace("(", "").replace(")", "").split(",")
-    ]
-
-    xstart, xstop = x_range
-    ystart, ystop = y_range
 
     xs = np.linspace(xstart, xstop, int(np.ceil((xstop - xstart) / pixel_size)))
     ys = np.linspace(ystart, ystop, int(np.ceil((ystop - ystart) / pixel_size)))
