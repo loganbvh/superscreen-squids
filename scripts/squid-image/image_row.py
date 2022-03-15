@@ -121,7 +121,7 @@ def main():
     field_units = "mT"
     outdir = args.outdir
     squid_height = args.squid_height
-    min_triangles = args.min_triangles
+    min_points = args.min_points
     x_range = args.x_range
     y_range = args.y_range
     iterations = args.iterations
@@ -164,8 +164,8 @@ def main():
     logging.info(squid)
     logging.info(sample)
 
-    squid.make_mesh(min_triangles=min_triangles, optimesh_steps=optimesh_steps)
-    sample.make_mesh(min_triangles=min_triangles, optimesh_steps=optimesh_steps)
+    squid.make_mesh(min_points=min_points, optimesh_steps=optimesh_steps)
+    sample.make_mesh(min_points=min_points, optimesh_steps=optimesh_steps)
 
     logging.info("Computing bare mutual inductance...")
     circulating_currents = {"fc_center": "1 mA"}

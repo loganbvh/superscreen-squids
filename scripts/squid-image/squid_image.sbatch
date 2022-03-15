@@ -23,7 +23,7 @@ mkdir -p $outdir/logs
 python image_row.py \
     --outdir=$outdir \
     --squid-height=-0.035 \
-    --min-triangles=13000 \
+    --min-points=6500 \
     --optimesh-steps=50 \
     --x-range="-4, 4" \
     --y-range="-5, 5" \
