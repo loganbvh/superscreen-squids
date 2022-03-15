@@ -77,10 +77,10 @@ def main():
         help="output directory",
     )
     parser.add_argument(
-        "--min-triangles",
+        "--min-points",
         type=int,
-        default=8000,
-        help="Minimum number of triangles to use in the two SQUID meshes.",
+        default=5000,
+        help="Minimum number of points to use in the two SQUID meshes.",
     )
     parser.add_argument(
         "--optimesh-steps",
