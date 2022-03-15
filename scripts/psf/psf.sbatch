@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --job-name=psf
-#SBATCH --array=0-50
+#SBATCH --array=0-80
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --time=05:00:00
 #SBATCH --ntasks=1
@@ -23,11 +23,11 @@ mkdir -p $outdir/logs
 python psf_row.py \
     --outdir=$outdir \
     --squid-type="ibm-small" \
-    --squid-height=0.5 \
+    --squid-height=0.175 \
+    --align-layers="middle" \
     --min-points=5000 \
-    --x-range="-4, 4" \
-    --y-range="-4, 4" \
-    --pixel-size=0.05 \
+    --x-range="-2, 2" \
+    --y-range="-2, 2" \
     --iterations=4
 
 mv "slurm-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.out" $outdir/logs/
