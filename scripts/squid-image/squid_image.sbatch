@@ -25,8 +25,8 @@ python image_row.py \
     --squid-height=-0.035 \
     --min-triangles=13000 \
     --optimesh-steps=50 \
-    --x_range="-4, 4" \
-    --y_range="-5, 5" \
+    --x-range="-4, 4" \
+    --y-range="-5, 5" \
     --iterations=5
 
 mv "slurm-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.out" $outdir/logs/
