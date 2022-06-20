@@ -38,8 +38,8 @@ def make_squid(align_layers: str = "middle"):
         poly.points = poly.resample(201)
     bbox = np.array(
         [
-            [-4.5, -12.5],
-            [8.5, -12.5],
+            [-4.5, -9.5],
+            [8.5, -9.5],
             [8.5, 3.5],
             [-4.5, 3.5],
         ]

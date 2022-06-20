@@ -30,7 +30,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--min-points",
         type=int,
-        default=6_000,
+        default=5_000,
         help="Minimum number of vertices in the mesh.",
     )
     parser.add_argument(
