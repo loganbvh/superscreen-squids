@@ -5,15 +5,11 @@ import matplotlib.pyplot as plt
 import superscreen as sc
 
 from . import huber
+from . import hypres
 from . import ibm
 
 
-def get_mutual(
-    squid,
-    label,
-    iterations,
-    fc_lambda=None
-):
+def get_mutual(squid, label, iterations, fc_lambda=None):
     if fc_lambda is not None:
         squid.layers["BE"].london_lambda = fc_lambda
     print(squid)
@@ -53,13 +49,13 @@ if __name__ == "__main__":
         "--optimesh-steps",
         type=int,
         default=40,
-        help="Number of optimesh steps to perform."
+        help="Number of optimesh steps to perform.",
     )
     parser.add_argument(
         "--fc-lambda",
         type=float,
         default=None,
-        help="London penetration depth for the field coil layer."
+        help="London penetration depth for the field coil layer.",
     )
     args = parser.parse_args()
 
@@ -69,6 +65,7 @@ if __name__ == "__main__":
         "ibm-large": ibm.large.make_squid,
         "ibm-xlarge": ibm.xlarge.make_squid,
         "huber": huber.make_squid,
+        "hypres-small": hypres.small.make_squid,
     }
 
     mutuals = {}
