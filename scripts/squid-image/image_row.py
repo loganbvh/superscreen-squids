@@ -86,7 +86,7 @@ def main():
         "--optimesh-steps",
         type=int,
         default=None,
-        help="Number of optimesh steps to perform."
+        help="Number of optimesh steps to perform.",
     )
     parser.add_argument(
         "--iterations",
@@ -224,7 +224,9 @@ def main():
             iterations=iterations,
         )[-1]
         logging.info("\tComputing pickup loop flux...")
-        pl_flux = solution.polygon_flux(polygons="pl", units="Phi_0", with_units=False)["pl"]
+        pl_flux = solution.polygon_flux(polygons="pl", units="Phi_0", with_units=False)[
+            "pl"
+        ]
         pl_total_flux.append(pl_flux)
         fluxoid = solution.hole_fluxoid("pl_center", units="Phi_0")
         flux_part.append(fluxoid.flux_part.magnitude)
@@ -235,7 +237,6 @@ def main():
         )
         logging.info(f"({i + 1} / {len(xs)}) flux: {flux_part}")
         logging.info(f"({i + 1} / {len(xs)}) pl_total_flux: {pl_total_flux}")
-
 
     # Units: Phi_0
     pl_total_flux = np.array(pl_total_flux)

@@ -14,7 +14,7 @@ from squids.ibm.layers import ibm_squid_layers
 
 def lambda_bcs(lambda0: float, T: float, Tc: float) -> float:
     t = T / Tc
-    return lambda0 / np.sqrt(1 - t ** 4) 
+    return lambda0 / np.sqrt(1 - t**4)
 
 
 def make_sample(
@@ -80,7 +80,7 @@ def make_sample(
         mod1,
         mod2,
     ]
-    
+
     bounding_box = sc.Polygon(
         "bounding_box",
         layer="W1",
@@ -89,14 +89,10 @@ def make_sample(
 
     for film in films:
         film.points = sc.geometry.translate(
-            sc.geometry.rotate(film.points, -27),
-            7.5 - 1, -4.5 + 3
+            sc.geometry.rotate(film.points, -27), 7.5 - 1, -4.5 + 3
         )
-    
-    films = [
-        f.resample(film_points).intersection(bounding_box)
-        for f in films
-    ]
+
+    films = [f.resample(film_points).intersection(bounding_box) for f in films]
 
     sample = sc.Device(
         name="sample",
@@ -219,13 +215,13 @@ if __name__ == "__main__":
         "--sample-lambda0",
         type=float,
         default=0.08,
-        help="Sample T=0 London penetration depth in microns"
+        help="Sample T=0 London penetration depth in microns",
     )
     parser.add_argument(
         "--sample-temperature",
         type=float,
         default=8.0,
-        help="Sample temperature in Kelvin"
+        help="Sample temperature in Kelvin",
     )
     args = parser.parse_args()
 
@@ -337,7 +333,9 @@ if __name__ == "__main__":
         fluxoid = solution.hole_fluxoid("pl_center", units="Phi_0")
         flux_part.append(fluxoid.flux_part.magnitude)
         supercurrent_part.append(fluxoid.supercurrent_part.magnitude)
-        pl_flux = solution.polygon_flux(polygons="pl", units="Phi_0", with_units=False)["pl"]
+        pl_flux = solution.polygon_flux(polygons="pl", units="Phi_0", with_units=False)[
+            "pl"
+        ]
         polygon_flux.append(pl_flux)
         logging.info(
             f"({i + 1} / {len(xs)}) mutual: "
