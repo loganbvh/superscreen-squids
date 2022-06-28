@@ -72,7 +72,7 @@ def huber_geometry(interp_points=101):
 
     x0_fc_center = w_fc_center / 2
     theta0_fc_center = np.arcsin(x0_fc_center / ri_fc)
-    y0_fc_center = ri_fc * np.cos(theta0_fc_center)
+    # y0_fc_center = ri_fc * np.cos(theta0_fc_center)
     thetas_fc_center = (
         np.linspace(theta0_fc_center, 2 * np.pi - theta0_fc_center, 101) - np.pi / 2
     )
@@ -95,7 +95,7 @@ def huber_geometry(interp_points=101):
 
     x0_fc_outer = w_fc_outer / 2
     theta0_fc_outer = np.arcsin(x0_fc_outer / ro_fc)
-    y0_fc_outer = ri_fc * np.cos(theta0_fc_outer)
+    # y0_fc_outer = ri_fc * np.cos(theta0_fc_outer)
     thetas_fc_outer = (
         np.linspace(theta0_fc_outer, 2 * np.pi - theta0_fc_outer, 101) - np.pi / 2
     )
