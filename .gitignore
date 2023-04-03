@@ -4,3 +4,4 @@ __pycache__
 results
 *.out
 .ipynb_checkpoints
+.DS_Store
