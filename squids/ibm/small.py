@@ -7,7 +7,7 @@ from superscreen.geometry import box
 from .layers import ibm_squid_layers
 
 
-def make_squid(align_layers="middle"):
+def make_squid(with_terminals: bool = True, align_layers="middle"):
     interp_points = 201
     pl_length = 2.5
     ri_pl = 0.1
@@ -117,23 +117,28 @@ def make_squid(align_layers="middle"):
         )
     )
 
-    fc_mask = sc.Polygon(points=box(2.5, 0.75)).rotate(58).translate(dx=1.7, dy=-1)
-    fc = fc.difference(fc_mask, fc_center).resample(501)
-    source = (
-        sc.Polygon("source", layer="BE", points=box(0.6, 0.05))
-        .rotate(58)
-        .translate(dx=1.75, dy=-0.2)
-    )
-    drain = (
-        sc.Polygon("drain", layer="BE", points=box(0.6, 0.05))
-        .rotate(58)
-        .translate(dx=1.21, dy=-1.075)
-    )
-
     films = [fc_shield, pl_shield1, pl_shield2, pl]
-    holes = [pl_center]
+    holes = [pl_center, fc_center]
     for polygon in films + holes:
         polygon.points = polygon.resample(interp_points)
+
+    terminals = None
+    if with_terminals:
+        fc_mask = sc.Polygon(points=box(2.5, 0.75)).rotate(58).translate(dx=1.7, dy=-1)
+        fc = fc.difference(fc_mask, fc_center).resample(501)
+        source = (
+            sc.Polygon("source", layer="BE", points=box(0.6, 0.05))
+            .rotate(58)
+            .translate(dx=1.75, dy=-0.2)
+        )
+        drain = (
+            sc.Polygon("drain", layer="BE", points=box(0.6, 0.05))
+            .rotate(58)
+            .translate(dx=1.21, dy=-1.075)
+        )
+        terminals = {"fc": [source, drain]}
+        holes = [pl_center]
+
     films.insert(0, fc)
 
     return sc.Device(
@@ -141,7 +146,6 @@ def make_squid(align_layers="middle"):
         layers=ibm_squid_layers(align=align_layers),
         films=films,
         holes=holes,
-        terminals={"fc": [source, drain]},
-        # abstract_regions=[bbox],
+        terminals=terminals,
         length_units="um",
     )
