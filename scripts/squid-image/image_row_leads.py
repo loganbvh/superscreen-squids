@@ -1,10 +1,9 @@
+import logging
 import os
 import sys
-import logging
 from typing import List
 
 import numpy as np
-
 import superscreen as sc
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
@@ -84,7 +83,7 @@ def make_sample(
     bounding_box = sc.Polygon(
         "bounding_box",
         layer="W1",
-        points=sc.geometry.box(20, 20, points_per_side=5, center=(0, 0)),
+        points=sc.geometry.box(20, 20, points=21, center=(0, 0)),
     )
 
     for film in films:
@@ -162,7 +161,6 @@ def squid_applied_field(x, y, z, sample_solution=None, field_units="mT"):
 
 
 if __name__ == "__main__":
-
     import argparse
 
     parser = argparse.ArgumentParser()
@@ -293,7 +291,6 @@ if __name__ == "__main__":
     flux_part = []
     supercurrent_part = []
     for i, x0 in enumerate(sample_x0s):
-
         logging.info(
             f"({i + 1} / {len(xs)}) Solving for sample response to field coil..."
         )
