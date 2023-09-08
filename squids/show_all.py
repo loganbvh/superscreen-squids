@@ -16,9 +16,13 @@ if __name__ == "__main__":
         action="store_true",
         help="Whether to plot all devices on the same scale.",
     )
+    parser.add_argument(
+        "--no-terminals", action="store_true", help="Set with_terminals=False"
+    )
     args = parser.parse_args()
 
     squid_funcs = [
+        hypres.xsmall.make_squid,
         hypres.small.make_squid,
         ibm.small.make_squid,
         ibm.medium.make_squid,
@@ -39,10 +43,10 @@ if __name__ == "__main__":
     )
 
     for ax, make_squid in zip(axes, squid_funcs):
-        squid = make_squid()
+        squid = make_squid(with_terminals=(not args.no_terminals))
         if args.draw:
-            squid.draw(ax=ax, legend=False, exclude=["bounding_box", "circle"])
+            squid.draw(ax=ax, legend=False)
         else:
-            squid.plot(ax=ax, legend=False)
+            squid.plot_polygons(ax=ax, legend=False)
         ax.set_title(make_squid.__module__)
     plt.show()
