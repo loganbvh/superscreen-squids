@@ -24,7 +24,7 @@ python -m squids.show_all --draw --same-scale
 
 ![squids.show_all --draw --same-scale](images/show_all--draw--same-scale.png)
 
-## `squids.mutuals``
+## `squids.mutuals`
 
 Usage:
 
