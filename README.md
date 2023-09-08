@@ -35,39 +35,45 @@ python -m squids.mutuals
 Output:
 
 ```
+squids.hypres.xsmall
+--------------------
+197.47303402347075 magnetic_flux_quantum / ampere
+0.40834142391220707 picohenry
+-------------------------------------------------
+
 squids.hypres.small
 -------------------
-285.50878980023543 magnetic_flux_quantum / ampere
-0.590384739582329 picohenry
--------------------------------------------------
+297.8883597846232 magnetic_flux_quantum / ampere
+0.6159836334254493 picohenry
+------------------------------------------------
 
 squids.ibm.small
 ----------------
-72.8267388114595 magnetic_flux_quantum / ampere
-0.15059359558743207 picohenry
------------------------------------------------
+71.89056878633194 magnetic_flux_quantum / ampere
+0.14865775152155783 picohenry
+------------------------------------------------
 
 squids.ibm.medium
 -----------------
-158.75456595635796 magnetic_flux_quantum / ampere
-0.3282780650824389 picohenry
+160.24919637780062 magnetic_flux_quantum / ampere
+0.3313687124588389 picohenry
 -------------------------------------------------
 
 squids.ibm.large
 ----------------
-601.280775544196 magnetic_flux_quantum / ampere
-1.2433487400997283 picohenry
------------------------------------------------
+598.6426106111054 magnetic_flux_quantum / ampere
+1.2378934533532584 picohenry
+------------------------------------------------
 
 squids.ibm.xlarge
 -----------------
-1576.6470894734962 magnetic_flux_quantum / ampere
-3.2602442186922795 picohenry
+1572.2038424974053 magnetic_flux_quantum / ampere
+3.2510563221980426 picohenry
 -------------------------------------------------
 
 squids.huber
 ------------
-882.0365495331502 magnetic_flux_quantum / ampere
-1.823905032705215 picohenry
+890.0607255973631 magnetic_flux_quantum / ampere
+1.8404976955768126 picohenry
 ------------------------------------------------
 ```

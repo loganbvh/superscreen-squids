@@ -22,6 +22,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     squid_funcs = [
+        hypres.xsmall.make_squid,
         hypres.small.make_squid,
         ibm.small.make_squid,
         ibm.medium.make_squid,

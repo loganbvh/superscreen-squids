@@ -25,6 +25,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     squid_funcs = {
+        "hypres-xsmall": hypres.xsmall.make_squid,
         "hypres-small": hypres.small.make_squid,
         "ibm-small": ibm.small.make_squid,
         "ibm-medium": ibm.medium.make_squid,
@@ -34,6 +35,7 @@ if __name__ == "__main__":
     }
 
     max_edge_lengths = {
+        "hypres-xsmall": 0.2,
         "hypres-small": 0.2,
         "ibm-small": 0.1,
         "ibm-medium": 0.1,
