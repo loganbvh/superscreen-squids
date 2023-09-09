@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import superscreen as sc
 from superscreen.geometry import box, close_curve
@@ -17,7 +19,8 @@ def make_squid(with_terminals: bool = True, align_layers: str = "middle"):
         "pl_shield2": "BE",
     }
 
-    with np.load("squids/hypres/hypres-250nm.npz") as f:
+    npz_path = os.path.join(os.path.dirname(__file__), "hypres-250nm.npz")
+    with np.load(npz_path) as f:
         polygons = dict(f)
 
     films = {
