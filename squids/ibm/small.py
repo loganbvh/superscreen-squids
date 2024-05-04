@@ -4,6 +4,7 @@ import numpy as np
 import superscreen as sc
 from superscreen.geometry import box
 
+from .alignment import SQUID_PARAMS, make_squid_sample_side_view
 from .layers import ibm_squid_layers
 
 
@@ -149,3 +150,21 @@ def make_squid(with_terminals: bool = True, align_layers="middle"):
         terminals=terminals,
         length_units="um",
     )
+
+
+def make_squid_side_view(squid_height: float = 0.0, squid_angle: float = 0.0):
+    """Make a ``superscreen.Device`` containing the side view geometry of the SQUID.
+
+    Args:
+        squid_height: Standoff distance between the top of the
+            W2 wiring layer and the sample plane in microns
+        squid_angle: The SQUID alignment angle (>0) in degrees
+
+    Returns:
+        A ``Device`` containing the SQUID geometry
+    """
+    kwargs = SQUID_PARAMS["small"].copy()
+    kwargs["squid_height"] = squid_height
+    kwargs["squid_angle"] = squid_angle
+    kwargs["name"] = "ibm.small side view"
+    return make_squid_sample_side_view(**kwargs)
