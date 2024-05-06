@@ -181,7 +181,7 @@ def find_minimum_standoff(
     squid_size: str,
     angles: Sequence[float] = np.linspace(0, 6, 61),
     standoffs: Sequence[float] = np.linspace(0, 2, 401),
-) -> np.ndarray:
+) -> tuple[np.ndarray, np.ndarray]:
     kwargs = SQUID_PARAMS[squid_size].copy()
     min_standoffs = []
 
@@ -204,7 +204,7 @@ def find_minimum_standoff(
     min_standoffs = np.array(min_standoffs)
     if len(min_standoffs) != len(angles):
         raise ValueError("Could not find minimum standoff distance for all angles.")
-    return min_standoffs
+    return angles, min_standoffs
 
 
 def main():
