@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 import pint
 import superscreen as sc
@@ -37,7 +39,7 @@ def get_mutual(
     I_fc = "1 mA"
     solution = sc.solve(
         squid,
-        terminal_currents={"fc": {"drain": f"{I_fc}", "source": f"-{I_fc}"}},
+        terminal_currents={"fc": {"source": f"{I_fc}", "drain": f"-{I_fc}"}},
         iterations=iterations,
     )[-1]
     fluxoid = sum(solution.hole_fluxoid("pl_center"))
@@ -86,13 +88,13 @@ def get_susceptibility(
     sample: sc.Device,
     fc_solution: sc.Solution,
     squid_position: tuple[float, float, float],
-    squid_model: sc.FactorizedModel | None = None,
+    squid_model: Optional[sc.FactorizedModel] = None,
     iterations: int = 5,
     pitch: float = 0.0,
     roll: float = 0.0,
     yaw: float = 0.0,
 ) -> float:
-    I_fc = fc_solution.terminal_currents["fc"]["drain"]
+    I_fc = fc_solution.terminal_currents["fc"]["source"]
     current_units = fc_solution.current_units
     I_fc = f"{I_fc} {current_units}"
     squid_position = np.array(squid_position)
